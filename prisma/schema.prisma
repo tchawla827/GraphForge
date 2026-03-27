@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Auth.js v5 required models
+// ──────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts   Account[]
+  sessions   Session[]
+  projects   Project[]
+  shareLinks ShareLink[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ──────────────────────────────────────────────
+// GraphForge domain models
+// ──────────────────────────────────────────────
+
+model Project {
+  id                String    @id @default(cuid())
+  ownerId           String
+  title             String
+  description       String?
+  visibilityDefault String    @default("private") // "private" | "public" | "shared_private"
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  archivedAt        DateTime?
+
+  owner        User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  graphs       GraphRecord[]
+  shareLinks   ShareLink[]
+  algorithmRuns AlgorithmRun[]
+  importRecords ImportRecord[]
+}
+
+model GraphRecord {
+  id                 String   @id @default(cuid())
+  projectId          String
+  schemaVersion      Int      @default(1)
+  isDirected         Boolean  @default(false)
+  isWeighted         Boolean  @default(false)
+  allowSelfLoops     Boolean  @default(false)
+  allowParallelEdges Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  nodes   NodeRecord[]
+  edges   EdgeRecord[]
+
+  @@unique([projectId]) // one graph per project in MVP
+}
+
+model NodeRecord {
+  id           String  @id @default(cuid())
+  graphId      String
+  label        String
+  x            Float
+  y            Float
+  metadataJson Json?
+
+  graph GraphRecord @relation(fields: [graphId], references: [id], onDelete: Cascade)
+}
+
+model EdgeRecord {
+  id           String  @id @default(cuid())
+  graphId      String
+  sourceNodeId String
+  targetNodeId String
+  weight       Float?
+  label        String?
+  metadataJson Json?
+
+  graph GraphRecord @relation(fields: [graphId], references: [id], onDelete: Cascade)
+}
+
+model ShareLink {
+  id        String    @id @default(cuid())
+  projectId String
+  type      String    // "public" | "private_token"
+  slug      String?   @unique
+  tokenHash String?
+  isActive  Boolean   @default(true)
+  createdBy String
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator User    @relation(fields: [createdBy], references: [id])
+}
+
+model AlgorithmRun {
+  id           String   @id @default(cuid())
+  projectId    String
+  algorithm    String   // AlgorithmKey
+  sourceNodeId String?
+  targetNodeId String?
+  configJson   Json
+  resultJson   Json
+  eventCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ImportRecord {
+  id               String   @id @default(cuid())
+  projectId        String
+  type             String   // "adjacency_list" | "adjacency_matrix" | "json"
+  originalFilename String?
+  status           String   // "success" | "error"
+  errorSummary     String?
+  createdAt        DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

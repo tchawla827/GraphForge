@@ -3,11 +3,11 @@
 Last updated: 2026-03-27
 
 ## Active phase
-**Phase 1 — Foundation**
-Execution spec: `@docs/phases/phase-1.md`
+**Phase 2 — Graph Editor**
+Execution spec: `@docs/phases/phase-2.md`
 
 ## Phase status
-- [ ] Phase 1 — Foundation (`@docs/phases/phase-1.md`)
+- [x] Phase 1 — Foundation (`@docs/phases/phase-1.md`)
 - [ ] Phase 2 — Graph Editor (`@docs/phases/phase-2.md`)
 - [ ] Phase 3 — Import/Export (`@docs/phases/phase-3.md`)
 - [ ] Phase 4 — Algorithm Engine + Playback (`@docs/phases/phase-4.md`)
@@ -17,19 +17,28 @@ Execution spec: `@docs/phases/phase-1.md`
 Note: Phases 3 and 4 can run in parallel (no dependency between them). Phases 3, 4, and 5 all depend on Phase 2.
 
 ## Now
-1. Initialize Next.js App Router project with TypeScript, Tailwind, ESLint, src directory
-2. Install and configure all core dependencies
-3. Set up Prisma schema and Auth.js
-
-See `@docs/phases/phase-1.md` for exact file paths, implementation tasks, and verification checklist.
+Phase 2 — Graph Editor. See `@docs/phases/phase-2.md`.
 
 ## Blockers
-- None
+- `pnpm prisma migrate dev --name init` requires `.env.local` with real DATABASE_URL.
+  User must create `.env.local` from `.env.example` before running migrations.
+- OAuth sign-in verification requires real AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET in `.env.local`.
 
 ## Done
 - Final PRD completed and accepted
 - Claude Code instruction system planned
 - Documentation rewritten with phase execution specs and 3-tier loading protocol
+- **Phase 1 complete** (2026-03-27):
+  - Next.js 16 + React 19 + TypeScript project scaffolded
+  - Prisma 6 schema: 10 models (User, Account, Session, VerificationToken, Project,
+    GraphRecord, NodeRecord, EdgeRecord, ShareLink, AlgorithmRun, ImportRecord)
+  - Auth.js v5 beta configured (Google OAuth + PrismaAdapter)
+  - Canonical types: `src/types/graph.ts`, `src/types/events.ts`, `src/types/api.ts`
+  - Dark theme (Tailwind v4 CSS tokens, indigo accent, #0a0a0a surface)
+  - App shell: Navbar, AppShell, Providers (QueryClient + Session)
+  - Routes: `/` (landing), `/sign-in`, `/dashboard` (auth-guarded), `/editor/[projectId]` (auth-guarded)
+  - Auth.js catch-all route handler
+  - `pnpm typecheck` ✓ | `pnpm lint` ✓ | `pnpm build` ✓
 
 ## Backlog (post-MVP)
 - SCC

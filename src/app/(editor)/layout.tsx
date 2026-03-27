@@ -12,5 +12,5 @@ export default async function EditorLayout({
     redirect("/sign-in");
   }
 
-  return <div className="min-h-screen bg-background">{children}</div>;
+  return <div className="h-screen overflow-hidden bg-background">{children}</div>;
 }

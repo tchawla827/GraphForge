@@ -72,7 +72,7 @@ function EditorInner({ projectId }: { projectId: string }) {
 
   return (
     <div className="flex flex-col h-full">
-      <Toolbar projectTitle={title} />
+      <Toolbar projectTitle={title} projectId={projectId} />
       <div className="flex flex-1 overflow-hidden">
         <ToolRail />
         <EditorCanvas />

@@ -223,6 +223,7 @@ export const EdgeComponent = memo(function EdgeComponent({
             style={{
               transform: `translate(-50%, -50%) translate(${handlePoint.x}px, ${handlePoint.y}px)`,
               pointerEvents: "all",
+              zIndex: 2,
             }}
             className="absolute nodrag nopan"
           >
@@ -240,6 +241,7 @@ export const EdgeComponent = memo(function EdgeComponent({
             style={{
               transform: `translate(-50%, -50%) translate(${labelPoint.x}px, ${labelPoint.y}px)`,
               pointerEvents: "all",
+              zIndex: 1,
             }}
             className="absolute max-w-[160px] bg-zinc-900/95 border border-zinc-700 rounded px-1.5 py-0.5 text-[10px] text-zinc-300 font-mono text-center break-words nodrag nopan"
           >

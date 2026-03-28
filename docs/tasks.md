@@ -3,13 +3,13 @@
 Last updated: 2026-03-27
 
 ## Active phase
-**Phase 3 — Import/Export**
-Execution spec: `@docs/phases/phase-3.md`
+**Phase 4 — Algorithm Engine + Playback**
+Execution spec: `@docs/phases/phase-4.md`
 
 ## Phase status
 - [x] Phase 1 — Foundation (`@docs/phases/phase-1.md`)
 - [x] Phase 2 — Graph Editor (`@docs/phases/phase-2.md`)
-- [ ] Phase 3 — Import/Export (`@docs/phases/phase-3.md`)
+- [x] Phase 3 — Import/Export (`@docs/phases/phase-3.md`)
 - [ ] Phase 4 — Algorithm Engine + Playback (`@docs/phases/phase-4.md`)
 - [ ] Phase 5 — Save/Share/Fork (`@docs/phases/phase-5.md`)
 - [ ] Phase 6 — Polish (`@docs/phases/phase-6.md`)
@@ -17,7 +17,7 @@ Execution spec: `@docs/phases/phase-3.md`
 Note: Phases 3 and 4 can run in parallel (no dependency between them). Phases 3, 4, and 5 all depend on Phase 2.
 
 ## Now
-Phase 3 — Import/Export. See `@docs/phases/phase-3.md`.
+Phase 4 — Algorithm Engine + Playback. See `@docs/phases/phase-4.md`.
 
 ## Blockers
 - `pnpm prisma migrate dev --name init` requires `.env.local` with real DATABASE_URL.
@@ -28,6 +28,16 @@ Phase 3 — Import/Export. See `@docs/phases/phase-3.md`.
 - Final PRD completed and accepted
 - Claude Code instruction system planned
 - Documentation rewritten with phase execution specs and 3-tier loading protocol
+- **Phase 3 complete** (2026-03-27):
+  - Pure parsers: adjacencyList, adjacencyMatrix, jsonImport (all with size limits)
+  - ParseResult<T> / ParseError types in `src/lib/parsers/`
+  - importService: stamps real graph IDs, calls replaceGraph, writes ImportRecord
+  - API routes: POST /api/projects/[id]/import/{adjacency-list,adjacency-matrix,json}
+  - ImportModal with three tabs (client-side validation preview, confirm-to-replace)
+  - Toolbar Import button wired; Export JSON already present
+  - 43 unit tests — all passing
+  - `pnpm typecheck` ✓ | `pnpm test` ✓
+
 - **Phase 2 complete** (2026-03-27):
   - Zustand stores: graphStore (CanonicalGraph + mutations), selectionStore, uiStore (toolMode/saveStatus)
   - React Flow adapters: toReactFlow (with playbackHighlights stub), fromReactFlow

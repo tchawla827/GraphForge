@@ -49,50 +49,11 @@ export function ProjectCard({
   }
 
   async function handleDuplicate() {
-    const [projectRes, graphRes] = await Promise.all([
-      fetch(`/api/projects/${id}`),
-      fetch(`/api/projects/${id}/graph`),
-    ]);
-
-    if (!projectRes.ok || !graphRes.ok) {
-      setMenuOpen(false);
-      return;
-    }
-
-    const projectJson = (await projectRes.json()) as {
-      data: { description?: string | null };
-    };
-    const graphJson = (await graphRes.json()) as {
-      data: Record<string, unknown>;
-    };
-
-    const createRes = await fetch("/api/projects", {
+    const duplicateRes = await fetch(`/api/projects/${id}/duplicate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: `${title} (copy)`,
-        description: projectJson.data.description ?? undefined,
-      }),
     });
 
-    if (!createRes.ok) {
-      setMenuOpen(false);
-      return;
-    }
-
-    const createJson = (await createRes.json()) as { data: { id: string } };
-    const duplicateGraph = {
-      ...graphJson.data,
-      projectId: createJson.data.id,
-    };
-
-    const saveRes = await fetch(`/api/projects/${createJson.data.id}/graph`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(duplicateGraph),
-    });
-
-    if (saveRes.ok) {
+    if (duplicateRes.ok) {
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
     }
 

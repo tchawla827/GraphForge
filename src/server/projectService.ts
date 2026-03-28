@@ -132,3 +132,93 @@ export async function deleteProject(
   });
   return { ok: true, data: null };
 }
+
+export async function duplicateProject(
+  projectId: string,
+  ownerId: string
+): Promise<ProjectResult<Project>> {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      graphs: {
+        include: {
+          nodes: true,
+          edges: true,
+        },
+      },
+    },
+  });
+  if (!project || project.archivedAt !== null) {
+    return { ok: false, error: "not_found" };
+  }
+  if (project.ownerId !== ownerId) {
+    return { ok: false, error: "forbidden" };
+  }
+
+  const sourceGraph = project.graphs[0];
+
+  const duplicatedProject = await prisma.$transaction(async (tx) => {
+    const createdProject = await tx.project.create({
+      data: {
+        ownerId,
+        title: `${project.title} (copy)`,
+        description: project.description,
+        graphs: {
+          create: {
+            schemaVersion: sourceGraph?.schemaVersion ?? 1,
+            isDirected: sourceGraph?.isDirected ?? true,
+            isWeighted: sourceGraph?.isWeighted ?? false,
+            allowSelfLoops: sourceGraph?.allowSelfLoops ?? false,
+            allowParallelEdges: sourceGraph?.allowParallelEdges ?? false,
+          },
+        },
+      },
+      include: {
+        graphs: true,
+      },
+    });
+
+    if (!sourceGraph) {
+      return createdProject;
+    }
+
+    const targetGraph = createdProject.graphs[0];
+    const nodeIdMap = new Map<string, string>();
+
+    if (sourceGraph.nodes.length > 0) {
+      await tx.nodeRecord.createMany({
+        data: sourceGraph.nodes.map((node) => {
+          const nextId = crypto.randomUUID();
+          nodeIdMap.set(node.id, nextId);
+
+          return {
+            id: nextId,
+            graphId: targetGraph.id,
+            label: node.label,
+            x: node.x,
+            y: node.y,
+            metadataJson: node.metadataJson,
+          };
+        }),
+      });
+    }
+
+    if (sourceGraph.edges.length > 0) {
+      await tx.edgeRecord.createMany({
+        data: sourceGraph.edges.map((edge) => ({
+          id: crypto.randomUUID(),
+          graphId: targetGraph.id,
+          sourceNodeId: nodeIdMap.get(edge.sourceNodeId) ?? edge.sourceNodeId,
+          targetNodeId: nodeIdMap.get(edge.targetNodeId) ?? edge.targetNodeId,
+          weight: edge.weight,
+          label: edge.label,
+          metadataJson: edge.metadataJson,
+        })),
+      });
+    }
+
+    return createdProject;
+  });
+
+  return { ok: true, data: duplicatedProject };
+}

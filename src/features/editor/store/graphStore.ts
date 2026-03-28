@@ -6,6 +6,7 @@ import {
   getParallelEdgeKey,
   normalizeEdgesForConfig,
 } from "@/lib/graph/utils";
+import { useSelectionStore } from "@/features/editor/store/selectionStore";
 
 interface GraphState {
   graph: CanonicalGraph | null;
@@ -36,6 +37,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
   isDirty: false,
 
   setGraph(graph) {
+    useSelectionStore.getState().reconcileSelection(graph);
     set({ graph, isDirty: false });
   },
 
@@ -56,14 +58,16 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
   removeNode(nodeId) {
     const { graph } = get();
     if (!graph) return;
+    const nextGraph = {
+      ...graph,
+      nodes: graph.nodes.filter((n) => n.id !== nodeId),
+      edges: graph.edges.filter(
+        (e) => e.source !== nodeId && e.target !== nodeId
+      ),
+    };
+    useSelectionStore.getState().reconcileSelection(nextGraph);
     set({
-      graph: {
-        ...graph,
-        nodes: graph.nodes.filter((n) => n.id !== nodeId),
-        edges: graph.edges.filter(
-          (e) => e.source !== nodeId && e.target !== nodeId
-        ),
-      },
+      graph: nextGraph,
       isDirty: true,
     });
   },
@@ -101,8 +105,13 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
   removeEdge(edgeId) {
     const { graph } = get();
     if (!graph) return;
+    const nextGraph = {
+      ...graph,
+      edges: graph.edges.filter((e) => e.id !== edgeId),
+    };
+    useSelectionStore.getState().reconcileSelection(nextGraph);
     set({
-      graph: { ...graph, edges: graph.edges.filter((e) => e.id !== edgeId) },
+      graph: nextGraph,
       isDirty: true,
     });
   },
@@ -139,12 +148,14 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
     const { graph } = get();
     if (!graph) return;
     const nextConfig = { ...graph.config, ...patch };
+    const nextGraph = {
+      ...graph,
+      config: nextConfig,
+      edges: normalizeEdgesForConfig(graph.edges, nextConfig),
+    };
+    useSelectionStore.getState().reconcileSelection(nextGraph);
     set({
-      graph: {
-        ...graph,
-        config: nextConfig,
-        edges: normalizeEdgesForConfig(graph.edges, nextConfig),
-      },
+      graph: nextGraph,
       isDirty: true,
     });
   },

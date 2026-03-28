@@ -71,7 +71,11 @@ function getNodeRelativeAnchor(nodeId: string, client: Anchor) {
   };
 }
 
-export function EditorCanvas() {
+interface EditorCanvasProps {
+  readOnly?: boolean;
+}
+
+export function EditorCanvas({ readOnly = false }: EditorCanvasProps) {
   const { graph, addNode, removeNode } = useGraphStore();
   const {
     selectedNodeIds,
@@ -199,6 +203,7 @@ export function EditorCanvas() {
 
   const onPaneClick = useCallback(
     (event: React.MouseEvent) => {
+      if (readOnly) return;
       if (toolMode === "addNode") {
         const position = screenToFlowPosition({
           x: event.clientX,
@@ -209,29 +214,31 @@ export function EditorCanvas() {
         clearSelection();
       }
     },
-    [toolMode, addNode, clearSelection, screenToFlowPosition]
+    [readOnly, toolMode, addNode, clearSelection, screenToFlowPosition]
   );
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: { id: string }) => {
+      if (readOnly) return;
       if (toolMode === "delete") {
         removeNode(node.id);
       } else {
         selectNodes([node.id]);
       }
     },
-    [toolMode, removeNode, selectNodes]
+    [readOnly, toolMode, removeNode, selectNodes]
   );
 
   const onEdgeClick = useCallback(
     (_: React.MouseEvent, edge: { id: string }) => {
+      if (readOnly) return;
       if (toolMode === "delete") {
         useGraphStore.getState().removeEdge(edge.id);
       } else {
         selectEdges([edge.id]);
       }
     },
-    [toolMode, selectEdges]
+    [readOnly, toolMode, selectEdges]
   );
 
   const onSelectionChange = useCallback(
@@ -267,21 +274,24 @@ export function EditorCanvas() {
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnectStart={onConnectStart}
-        onConnectEnd={onConnectEnd}
+        onNodesChange={readOnly ? undefined : onNodesChange}
+        onEdgesChange={readOnly ? undefined : onEdgesChange}
+        onConnectStart={readOnly ? undefined : onConnectStart}
+        onConnectEnd={readOnly ? undefined : onConnectEnd}
         onPaneClick={onPaneClick}
         onNodeClick={onNodeClick}
         onEdgeClick={onEdgeClick}
         onSelectionChange={onSelectionChange}
         connectionMode={ConnectionMode.Loose}
-        connectionLineComponent={connectionLineComponent}
+        connectionLineComponent={readOnly ? undefined : connectionLineComponent}
+        nodesDraggable={!readOnly}
+        nodesConnectable={!readOnly}
+        elementsSelectable={!readOnly}
         fitView
         deleteKeyCode={null}
         colorMode="dark"
         className="bg-zinc-950"
-        style={{ cursor: toolMode === "addNode" ? "crosshair" : undefined }}
+        style={{ cursor: !readOnly && toolMode === "addNode" ? "crosshair" : undefined }}
       >
         <Background
           variant={BackgroundVariant.Dots}

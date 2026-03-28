@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Pencil, Trash2, Copy } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Copy, Share2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "./dateUtils";
+import { ShareModal } from "@/features/share/ShareModal";
 
 interface ProjectCardProps {
   id: string;
@@ -26,6 +27,7 @@ export function ProjectCard({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
 
@@ -134,6 +136,16 @@ export function ProjectCard({
                 Duplicate
               </button>
               <button
+                className="flex items-center gap-2 w-full px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-700"
+                onClick={() => {
+                  setShareOpen(true);
+                  setMenuOpen(false);
+                }}
+              >
+                <Share2 size={12} />
+                Share
+              </button>
+              <button
                 className="flex items-center gap-2 w-full px-3 py-2 text-xs text-red-400 hover:bg-zinc-700"
                 onClick={handleDelete}
               >
@@ -144,6 +156,8 @@ export function ProjectCard({
           )}
         </div>
       </CardContent>
+
+      <ShareModal open={shareOpen} onOpenChange={setShareOpen} projectId={id} />
     </Card>
   );
 }

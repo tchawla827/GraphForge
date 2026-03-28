@@ -7,6 +7,7 @@ import { useGraphStore } from "@/features/editor/store/graphStore";
 import { usePlaybackStore } from "@/features/editor/store/playbackStore";
 import { Button } from "@/components/ui/button";
 import { ImportModal } from "./ImportModal";
+import { ShareModal } from "@/features/share/ShareModal";
 
 interface ToolbarProps {
   projectTitle: string;
@@ -32,6 +33,7 @@ export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
   const { graph } = useGraphStore();
   const runStatus = usePlaybackStore((s) => s.runStatus);
   const [importOpen, setImportOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   function exportJson() {
     if (!graph) return;
@@ -85,9 +87,9 @@ export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
         <Button
           variant="ghost"
           size="sm"
-          title="Share (coming soon)"
-          disabled
-          className="gap-1.5 text-xs text-zinc-500"
+          title="Share project"
+          onClick={() => setShareOpen(true)}
+          className="gap-1.5 text-xs"
         >
           <Share2 size={14} />
           Share
@@ -111,6 +113,11 @@ export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
       <ImportModal
         open={importOpen}
         onOpenChange={setImportOpen}
+        projectId={projectId}
+      />
+      <ShareModal
+        open={shareOpen}
+        onOpenChange={setShareOpen}
         projectId={projectId}
       />
     </>

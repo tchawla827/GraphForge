@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/client";
+import { Prisma } from "@prisma/client";
 import type { Project } from "@prisma/client";
 
 export interface CreateProjectInput {
@@ -197,7 +198,9 @@ export async function duplicateProject(
             label: node.label,
             x: node.x,
             y: node.y,
-            metadataJson: node.metadataJson,
+            metadataJson: node.metadataJson
+              ? (node.metadataJson as Prisma.InputJsonValue)
+              : Prisma.JsonNull,
           };
         }),
       });
@@ -212,7 +215,9 @@ export async function duplicateProject(
           targetNodeId: nodeIdMap.get(edge.targetNodeId) ?? edge.targetNodeId,
           weight: edge.weight,
           label: edge.label,
-          metadataJson: edge.metadataJson,
+          metadataJson: edge.metadataJson
+            ? (edge.metadataJson as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
         })),
       });
     }

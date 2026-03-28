@@ -118,10 +118,12 @@ export function ShareModal({ open, onOpenChange, projectId }: ShareModalProps) {
               <ShareLinkDisplay
                 key={share.id}
                 shareId={share.id}
-                url={newShare?.url ?? share.url}
+                url={newShare?.url || share.url || undefined}
                 type={share.type as "public" | "private_token"}
                 rawToken={newShare?.rawToken}
-                onRevoke={(id) => revokeMutation.mutate(id)}
+                onRevoke={async (id) => {
+                  await revokeMutation.mutateAsync(id);
+                }}
               />
             );
           })}

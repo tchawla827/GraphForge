@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/select";
 import { useGraphStore } from "@/features/editor/store/graphStore";
 import { usePlaybackStore } from "@/features/editor/store/playbackStore";
-import { algorithmLabels } from "@/lib/algorithms/registry";
+import {
+  algorithmLabels,
+  getAlgorithm,
+} from "@/lib/algorithms/registry";
 import { validateAlgorithmInput } from "@/lib/algorithms/validate";
 import type { AlgorithmKey, AlgorithmRunConfig } from "@/types/graph";
 
@@ -69,13 +72,26 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
   }, [graph, buildConfig]);
 
   const handleRun = useCallback(async () => {
-    if (!graph || !projectId || !validation.ok) return;
+    if (!graph || !validation.ok) return;
 
     setIsRunning(true);
     setRunError(null);
 
     try {
       const config = buildConfig();
+      if (!projectId) {
+        const algorithmFn = getAlgorithm(config.algorithm);
+        if (!algorithmFn) {
+          throw new Error(`Algorithm "${config.algorithm}" is not yet implemented.`);
+        }
+
+        const startMs = performance.now();
+        const output = algorithmFn({ graph, config });
+        output.result.metrics.runtimeMs = Math.round(performance.now() - startMs);
+        startRun(output.events, output.result);
+        return;
+      }
+
       const res = await fetch(`/api/projects/${projectId}/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -200,7 +216,7 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
         className="w-full gap-1.5 text-xs"
         size="sm"
         onClick={handleRun}
-        disabled={!validation.ok || isRunning || !projectId}
+        disabled={!validation.ok || isRunning}
       >
         <Play size={12} />
         {isRunning ? "Running..." : "Run Algorithm"}

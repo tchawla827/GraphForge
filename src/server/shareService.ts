@@ -42,6 +42,8 @@ export interface ActivePrivateShareInfo {
   createdAt: Date;
 }
 
+const PRIVATE_SHARE_TOKEN_RE = /^[a-f0-9]{64}$/i;
+
 function buildShareUrl(base: string, slugOrToken: string): string {
   return `${base}/share/${slugOrToken}`;
 }
@@ -50,6 +52,10 @@ function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return "http://localhost:3000";
+}
+
+export function looksLikePrivateShareToken(slugOrToken: string): boolean {
+  return PRIVATE_SHARE_TOKEN_RE.test(slugOrToken);
 }
 
 export async function createPublicShare(

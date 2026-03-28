@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getShareBySlugOrToken } from "@/server/shareService";
+import {
+  getShareBySlugOrToken,
+  looksLikePrivateShareToken,
+} from "@/server/shareService";
 
 interface RouteContext {
   params: Promise<{ slugOrToken: string }>;
@@ -10,6 +13,18 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   const payload = await getShareBySlugOrToken(slugOrToken);
 
   if (!payload) {
+    if (looksLikePrivateShareToken(slugOrToken)) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "PERMISSION_DENIED",
+            message: "Private share token is invalid or no longer active",
+          },
+        },
+        { status: 403 }
+      );
+    }
+
     return NextResponse.json(
       { error: { code: "NOT_FOUND", message: "Share link not found or no longer active" } },
       { status: 404 }

@@ -25,6 +25,8 @@ const visualStateColors: Record<string, string> = {
   discovered: "#60a5fa",
   visited: "#818cf8",
   finalized: "#34d399",
+  considered: "#60a5fa",
+  relaxed: "#34d399",
   path: "#fbbf24",
   rejected: "#3f3f46",
 };

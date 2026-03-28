@@ -57,4 +57,28 @@ describe("DFS", () => {
     expect(visited).toContain("B");
     expect(visited).not.toContain("C");
   });
+
+  it("does not rediscover the same node through converging edges", () => {
+    const graph = buildGraph({
+      nodes: [
+        { id: "A", label: "A", x: 0, y: 0 },
+        { id: "B", label: "B", x: 100, y: 0 },
+        { id: "C", label: "C", x: 200, y: 0 },
+        { id: "D", label: "D", x: 300, y: 0 },
+      ],
+      edges: [
+        { id: "e1", source: "A", target: "B", weight: 1 },
+        { id: "e2", source: "A", target: "C", weight: 1 },
+        { id: "e3", source: "B", target: "D", weight: 1 },
+        { id: "e4", source: "C", target: "D", weight: 1 },
+      ],
+    });
+    const output = dfs({ graph, config: { algorithm: "dfs", sourceNodeId: "A" } });
+
+    const discoveredD = output.events.filter(
+      (e) => e.type === "NODE_DISCOVERED" && e.payload.nodeId === "D"
+    );
+
+    expect(discoveredD).toHaveLength(1);
+  });
 });

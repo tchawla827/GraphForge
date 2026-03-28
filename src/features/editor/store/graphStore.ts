@@ -45,6 +45,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
 
   setGraph(graph) {
     useSelectionStore.getState().reconcileSelection(graph);
+    usePlaybackStore.getState().clearRun();
     set({ graph, isDirty: false });
   },
 

@@ -8,6 +8,8 @@ export type VisualState =
   | "discovered"
   | "visited"
   | "finalized"
+  | "considered"
+  | "relaxed"
   | "path"
   | "rejected";
 

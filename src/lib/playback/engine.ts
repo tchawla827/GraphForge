@@ -32,13 +32,21 @@ export class PlaybackEngine {
   }
 
   previous(): PlaybackEvent | null {
-    if (this._currentStep <= 0) return null;
+    if (this._currentStep < 0) return null;
+    if (this._currentStep === 0) {
+      this._currentStep = -1;
+      return null;
+    }
     this._currentStep--;
     return this.events[this._currentStep];
   }
 
   goTo(index: number): PlaybackEvent | null {
-    if (index < 0 || index >= this.events.length) return null;
+    if (index === -1) {
+      this._currentStep = -1;
+      return null;
+    }
+    if (index < -1 || index >= this.events.length) return null;
     this._currentStep = index;
     return this.events[this._currentStep];
   }

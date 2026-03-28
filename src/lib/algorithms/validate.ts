@@ -11,6 +11,10 @@ export function validateAlgorithmInput(
   const { algorithm, sourceNodeId, targetNodeId } = config;
   const nodeIds = new Set(graph.nodes.map((n) => n.id));
 
+  if (graph.nodes.length === 0) {
+    return { ok: false, error: "The graph has no nodes." };
+  }
+
   // Source validation for algorithms that require it
   const requiresSource = [
     "bfs",
@@ -86,11 +90,6 @@ export function validateAlgorithmInput(
         error: `${algorithm === "prim" ? "Prim's" : "Kruskal's"} algorithm requires a weighted graph.`,
       };
     }
-  }
-
-  // Empty graph check
-  if (graph.nodes.length === 0) {
-    return { ok: false, error: "The graph has no nodes." };
   }
 
   return { ok: true };

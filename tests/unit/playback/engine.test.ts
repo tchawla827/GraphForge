@@ -59,7 +59,8 @@ describe("PlaybackEngine", () => {
     expect(engine.previous()).toBeNull();
 
     engine.next();
-    engine.previous();
+    expect(engine.previous()).toBeNull();
+    expect(engine.currentStep).toBe(-1);
     expect(engine.previous()).toBeNull();
   });
 
@@ -73,7 +74,9 @@ describe("PlaybackEngine", () => {
 
   it("goTo() returns null for out-of-range index", () => {
     const engine = new PlaybackEngine(makeEvents(3));
+    engine.goTo(1);
     expect(engine.goTo(-1)).toBeNull();
+    expect(engine.currentStep).toBe(-1);
     expect(engine.goTo(5)).toBeNull();
   });
 

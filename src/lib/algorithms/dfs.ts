@@ -21,7 +21,9 @@ export const dfs: AlgorithmFn = ({ graph, config }) => {
   }
 
   const visited = new Set<string>();
+  const discovered = new Set<string>();
   const stack: string[] = [source];
+  discovered.add(source);
   let visitedCount = 0;
   let edgesConsidered = 0;
 
@@ -46,7 +48,8 @@ export const dfs: AlgorithmFn = ({ graph, config }) => {
           `Considering edge ${findLabel(current)} → ${findLabel(neighbor)}`)
       );
 
-      if (!visited.has(neighbor)) {
+      if (!visited.has(neighbor) && !discovered.has(neighbor)) {
+        discovered.add(neighbor);
         stack.push(neighbor);
         events.push(
           eb.emit("NODE_DISCOVERED", { nodeId: neighbor }, `Discovered node ${findLabel(neighbor)}`)

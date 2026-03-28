@@ -64,7 +64,12 @@ export const usePlaybackStore = create<PlaybackState & PlaybackActions>(
       const { engine } = get();
       engine?.dispose();
       set({
+        events: [],
+        result: null,
         runStatus: "invalidated",
+        currentStep: -1,
+        totalSteps: 0,
+        visualHighlights: {},
         engine: null,
       });
     },
@@ -110,15 +115,13 @@ export const usePlaybackStore = create<PlaybackState & PlaybackActions>(
     stepBackward() {
       const { engine, events } = get();
       if (!engine) return;
-      const event = engine.previous();
-      if (event) {
-        const step = engine.currentStep;
-        set({
-          currentStep: step,
-          runStatus: "ready",
-          visualHighlights: computeVisualState(events, step) as PlaybackHighlights,
-        });
-      }
+      engine.previous();
+      const step = engine.currentStep;
+      set({
+        currentStep: step,
+        runStatus: "ready",
+        visualHighlights: computeVisualState(events, step) as PlaybackHighlights,
+      });
     },
 
     play() {

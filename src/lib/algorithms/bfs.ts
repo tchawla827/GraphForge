@@ -27,35 +27,74 @@ export const bfs: AlgorithmFn = ({ graph, config }) => {
   let visitedCount = 0;
   let edgesConsidered = 0;
 
-  events.push(eb.emit("NODE_DISCOVERED", { nodeId: source }, `Discovered source node ${findLabel(source)}`));
-  events.push(eb.emit("QUEUE_UPDATED", { items: [...queue] }, `Queue: [${queue.map(findLabel).join(", ")}]`));
+  events.push(
+    eb.emit(
+      "NODE_DISCOVERED",
+      { nodeId: source, label: findLabel(source) },
+      `Start at ${findLabel(source)}`
+    )
+  );
+  events.push(
+    eb.emit(
+      "QUEUE_UPDATED",
+      { items: [...queue], displayItems: queue.map(findLabel) },
+      formatQueueMessage(`Added ${findLabel(source)} as the starting node`)
+    )
+  );
 
   while (queue.length > 0) {
     const current = queue.shift()!;
+    events.push(
+      eb.emit(
+        "QUEUE_UPDATED",
+        { items: [...queue], displayItems: queue.map(findLabel) },
+        formatQueueMessage(`Dequeued ${findLabel(current)}`)
+      )
+    );
+
     visitedCount++;
-    events.push(eb.emit("NODE_VISITED", { nodeId: current }, `Visiting node ${findLabel(current)}`));
+    events.push(
+      eb.emit("NODE_VISITED", { nodeId: current }, `Visit ${findLabel(current)}`)
+    );
 
     const neighbors = adj.get(current) ?? [];
     for (const { nodeId: neighbor, edgeId } of neighbors) {
       edgesConsidered++;
       events.push(
-        eb.emit("EDGE_CONSIDERED", { edgeId, from: current, to: neighbor },
-          `Considering edge ${findLabel(current)} → ${findLabel(neighbor)}`)
+        eb.emit(
+          "EDGE_CONSIDERED",
+          { edgeId, from: current, to: neighbor },
+          `Check edge ${findLabel(current)} -> ${findLabel(neighbor)}`
+        )
       );
 
       if (!visited.has(neighbor)) {
         visited.add(neighbor);
         queue.push(neighbor);
         events.push(
-          eb.emit("NODE_DISCOVERED", { nodeId: neighbor }, `Discovered node ${findLabel(neighbor)}`)
+          eb.emit(
+            "NODE_DISCOVERED",
+            {
+              nodeId: neighbor,
+              label: findLabel(neighbor),
+              from: current,
+              fromLabel: findLabel(current),
+              viaEdgeId: edgeId,
+            },
+            `Discovered ${findLabel(neighbor)} from ${findLabel(current)} via ${findLabel(current)} -> ${findLabel(neighbor)}`
+          )
+        );
+        events.push(
+          eb.emit(
+            "QUEUE_UPDATED",
+            { items: [...queue], displayItems: queue.map(findLabel) },
+            formatQueueMessage(
+              `Enqueued ${findLabel(neighbor)} after ${findLabel(current)} -> ${findLabel(neighbor)}`
+            )
+          )
         );
       }
     }
-
-    events.push(eb.emit("QUEUE_UPDATED", { items: [...queue] },
-      queue.length > 0
-        ? `Queue: [${queue.map(findLabel).join(", ")}]`
-        : "Queue is empty"));
   }
 
   events.push(eb.emit("RUN_COMPLETED", {}, "BFS traversal complete"));
@@ -78,5 +117,11 @@ export const bfs: AlgorithmFn = ({ graph, config }) => {
 
   function findLabel(nodeId: string): string {
     return graph.nodes.find((n) => n.id === nodeId)?.label ?? nodeId;
+  }
+
+  function formatQueueMessage(action: string): string {
+    return queue.length > 0
+      ? `${action}. Queue: [${queue.map(findLabel).join(", ")}]`
+      : `${action}. Queue is empty`;
   }
 };

@@ -11,6 +11,7 @@ import {
 } from "@xyflow/react";
 import type { GraphEdgeData } from "@/features/editor/adapters/toReactFlow";
 import { useGraphStore } from "@/features/editor/store/graphStore";
+import { useUiStore } from "@/features/editor/store/uiStore";
 
 type GraphEdge = Edge<GraphEdgeData>;
 
@@ -18,17 +19,6 @@ type EdgeEndpoint = "source" | "target";
 type DragPreview = {
   endpoint: EdgeEndpoint;
   point: { x: number; y: number };
-};
-
-const visualStateColors: Record<string, string> = {
-  idle: "#52525b",
-  discovered: "#60a5fa",
-  visited: "#818cf8",
-  finalized: "#34d399",
-  considered: "#60a5fa",
-  relaxed: "#34d399",
-  path: "#fbbf24",
-  rejected: "#3f3f46",
 };
 
 function getQuadraticPoint(
@@ -121,6 +111,7 @@ export const EdgeComponent = memo(function EdgeComponent({
   selected,
 }: EdgeProps<GraphEdge>) {
   const { screenToFlowPosition } = useReactFlow();
+  const playbackColors = useUiStore((state) => state.playbackColors);
   const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
   const anchoredSourceX = data?.sourceAnchor?.x ?? sourceX;
   const anchoredSourceY = data?.sourceAnchor?.y ?? sourceY;
@@ -195,7 +186,21 @@ export const EdgeComponent = memo(function EdgeComponent({
     : controlPoint ?? labelPoint;
 
   const color =
-    visualStateColors[data?.visualState ?? "idle"] ?? visualStateColors.idle;
+    data?.visualState === "discovered"
+      ? playbackColors.discovered
+      : data?.visualState === "visited"
+        ? playbackColors.visited
+        : data?.visualState === "finalized"
+          ? playbackColors.finalized
+          : data?.visualState === "considered"
+            ? playbackColors.considered
+            : data?.visualState === "relaxed"
+              ? playbackColors.relaxed
+              : data?.visualState === "path"
+                ? playbackColors.path
+                : data?.visualState === "rejected"
+                  ? playbackColors.rejected
+                  : "#52525b";
   const strokeWidth = selected ? 2.5 : 1.5;
   const parts = [
     data?.showLabel && data.label?.trim() ? data.label.trim() : null,

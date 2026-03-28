@@ -49,6 +49,27 @@ describe("BFS", () => {
     expect(types).not.toContain("STACK_UPDATED");
   });
 
+  it("tracks who discovered each node and updates the queue live", () => {
+    const graph = buildGraph();
+    const output = bfs({ graph, config: { algorithm: "bfs", sourceNodeId: "A" } });
+
+    const discoveredB = output.events.find(
+      (event) =>
+        event.type === "NODE_DISCOVERED" &&
+        event.payload.nodeId === "B"
+    );
+    const queueUpdates = output.events.filter(
+      (event) => event.type === "QUEUE_UPDATED"
+    );
+
+    expect(discoveredB?.payload.from).toBe("A");
+    expect(discoveredB?.payload.fromLabel).toBe("A");
+    expect(queueUpdates.length).toBeGreaterThan(2);
+    expect(queueUpdates.some((event) => event.message.includes("Enqueued B"))).toBe(
+      true
+    );
+  });
+
   it("starts with RUN_STARTED and ends with RUN_COMPLETED", () => {
     const graph = buildGraph();
     const output = bfs({ graph, config: { algorithm: "bfs", sourceNodeId: "A" } });

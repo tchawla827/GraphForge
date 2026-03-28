@@ -29,6 +29,27 @@ describe("DFS", () => {
     expect(types).not.toContain("QUEUE_UPDATED");
   });
 
+  it("tracks who discovered each node and updates the stack live", () => {
+    const graph = buildGraph();
+    const output = dfs({ graph, config: { algorithm: "dfs", sourceNodeId: "A" } });
+
+    const discoveredB = output.events.find(
+      (event) =>
+        event.type === "NODE_DISCOVERED" &&
+        event.payload.nodeId === "B"
+    );
+    const stackUpdates = output.events.filter(
+      (event) => event.type === "STACK_UPDATED"
+    );
+
+    expect(discoveredB?.payload.from).toBe("A");
+    expect(discoveredB?.payload.fromLabel).toBe("A");
+    expect(stackUpdates.length).toBeGreaterThan(2);
+    expect(stackUpdates.some((event) => event.message.includes("Pushed B"))).toBe(
+      true
+    );
+  });
+
   it("starts with RUN_STARTED and ends with RUN_COMPLETED", () => {
     const graph = buildGraph();
     const output = dfs({ graph, config: { algorithm: "dfs", sourceNodeId: "A" } });

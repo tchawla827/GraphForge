@@ -8,7 +8,6 @@ export const dfs: AlgorithmFn = ({ graph, config }) => {
   const source = config.sourceNodeId!;
   const directed = graph.config.directed;
 
-  // Build adjacency list
   const adj = new Map<string, { nodeId: string; edgeId: string }[]>();
   for (const node of graph.nodes) {
     adj.set(node.id, []);
@@ -21,47 +20,11 @@ export const dfs: AlgorithmFn = ({ graph, config }) => {
   }
 
   const visited = new Set<string>();
-  const discovered = new Set<string>();
-  const stack: string[] = [source];
-  discovered.add(source);
+  const callStack: string[] = [];
   let visitedCount = 0;
   let edgesConsidered = 0;
 
-  events.push(eb.emit("NODE_DISCOVERED", { nodeId: source }, `Discovered source node ${findLabel(source)}`));
-  events.push(eb.emit("STACK_UPDATED", { items: [...stack] }, `Stack: [${stack.map(findLabel).join(", ")}]`));
-
-  while (stack.length > 0) {
-    const current = stack.pop()!;
-
-    if (visited.has(current)) continue;
-    visited.add(current);
-    visitedCount++;
-
-    events.push(eb.emit("NODE_VISITED", { nodeId: current }, `Visiting node ${findLabel(current)}`));
-
-    const neighbors = adj.get(current) ?? [];
-    // Reverse to maintain intuitive left-to-right order when popping from stack
-    for (const { nodeId: neighbor, edgeId } of [...neighbors].reverse()) {
-      edgesConsidered++;
-      events.push(
-        eb.emit("EDGE_CONSIDERED", { edgeId, from: current, to: neighbor },
-          `Considering edge ${findLabel(current)} → ${findLabel(neighbor)}`)
-      );
-
-      if (!visited.has(neighbor) && !discovered.has(neighbor)) {
-        discovered.add(neighbor);
-        stack.push(neighbor);
-        events.push(
-          eb.emit("NODE_DISCOVERED", { nodeId: neighbor }, `Discovered node ${findLabel(neighbor)}`)
-        );
-      }
-    }
-
-    events.push(eb.emit("STACK_UPDATED", { items: [...stack] },
-      stack.length > 0
-        ? `Stack: [${stack.map(findLabel).join(", ")}]`
-        : "Stack is empty"));
-  }
+  dfsVisit(source, null, null, true);
 
   events.push(eb.emit("RUN_COMPLETED", {}, "DFS traversal complete"));
 
@@ -81,7 +44,81 @@ export const dfs: AlgorithmFn = ({ graph, config }) => {
     },
   };
 
+  function dfsVisit(
+    nodeId: string,
+    parentNodeId: string | null,
+    viaEdgeId: string | null,
+    isSource = false
+  ) {
+    if (visited.has(nodeId)) return;
+
+    callStack.push(nodeId);
+    events.push(
+      eb.emit(
+        "NODE_DISCOVERED",
+        {
+          nodeId,
+          label: findLabel(nodeId),
+          ...(parentNodeId
+            ? {
+                from: parentNodeId,
+                fromLabel: findLabel(parentNodeId),
+                viaEdgeId,
+              }
+            : {}),
+        },
+        isSource ? `Start at ${findLabel(nodeId)}` : `Discovered ${findLabel(nodeId)}`
+      )
+    );
+    events.push(
+      eb.emit(
+        "STACK_UPDATED",
+        { items: [...callStack], displayItems: callStack.map(findLabel) },
+        formatStackMessage(
+          isSource
+            ? `Pushed ${findLabel(nodeId)} as the starting node`
+            : `Pushed ${findLabel(nodeId)}`
+        )
+      )
+    );
+
+    visited.add(nodeId);
+    visitedCount++;
+    events.push(eb.emit("NODE_VISITED", { nodeId }, `Visit ${findLabel(nodeId)}`));
+
+    const neighbors = adj.get(nodeId) ?? [];
+    for (const { nodeId: neighbor, edgeId } of neighbors) {
+      edgesConsidered++;
+      events.push(
+        eb.emit(
+          "EDGE_CONSIDERED",
+          { edgeId, from: nodeId, to: neighbor },
+          `Check edge ${findLabel(nodeId)} -> ${findLabel(neighbor)}`
+        )
+      );
+
+      if (!visited.has(neighbor)) {
+        dfsVisit(neighbor, nodeId, edgeId);
+      }
+    }
+
+    callStack.pop();
+    events.push(
+      eb.emit(
+        "STACK_UPDATED",
+        { items: [...callStack], displayItems: callStack.map(findLabel) },
+        formatStackMessage(`Returning from ${findLabel(nodeId)}`)
+      )
+    );
+  }
+
   function findLabel(nodeId: string): string {
     return graph.nodes.find((n) => n.id === nodeId)?.label ?? nodeId;
+  }
+
+  function formatStackMessage(action: string): string {
+    return callStack.length > 0
+      ? `${action}. Stack: [${callStack.map(findLabel).join(", ")}]`
+      : `${action}. Stack is empty`;
   }
 };

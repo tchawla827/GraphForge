@@ -74,6 +74,24 @@ function getCircularAnchor(
   };
 }
 
+function getDirectionalAnchor(
+  fromNode: CanonicalGraph["nodes"][number],
+  toNode: CanonicalGraph["nodes"][number]
+) {
+  const dx = toNode.position.x - fromNode.position.x;
+  const dy = toNode.position.y - fromNode.position.y;
+  const distance = Math.hypot(dx, dy);
+
+  if (distance === 0) {
+    return { x: 1, y: 0.5 };
+  }
+
+  return {
+    x: clamp(0.5 + dx / (2 * distance), 0, 1),
+    y: clamp(0.5 + dy / (2 * distance), 0, 1),
+  };
+}
+
 export function toReactFlow(
   graph: CanonicalGraph,
   playbackHighlights?: PlaybackHighlights,
@@ -123,11 +141,13 @@ export function toReactFlow(
       visualState: (highlights[e.id] ?? "idle") as VisualState,
       sourceAnchor: (() => {
         const node = nodeMap.get(e.source);
+        const otherNode = nodeMap.get(e.target);
         if (!node) return undefined;
         const anchor = (
           e.source === e.target
             ? { x: 0.78, y: 0.24 }
-            : e.metadata?.sourceAnchor
+            : e.metadata?.sourceAnchor ??
+              (otherNode ? getDirectionalAnchor(node, otherNode) : undefined)
         ) as
           | { x?: number; y?: number }
           | undefined;
@@ -135,11 +155,13 @@ export function toReactFlow(
       })(),
       targetAnchor: (() => {
         const node = nodeMap.get(e.target);
+        const otherNode = nodeMap.get(e.source);
         if (!node) return undefined;
         const anchor = (
           e.source === e.target
             ? { x: 0.22, y: 0.24 }
-            : e.metadata?.targetAnchor
+            : e.metadata?.targetAnchor ??
+              (otherNode ? getDirectionalAnchor(node, otherNode) : undefined)
         ) as
           | { x?: number; y?: number }
           | undefined;

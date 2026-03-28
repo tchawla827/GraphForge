@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -13,6 +13,12 @@ import type { GraphEdgeData } from "@/features/editor/adapters/toReactFlow";
 import { useGraphStore } from "@/features/editor/store/graphStore";
 
 type GraphEdge = Edge<GraphEdgeData>;
+
+type EdgeEndpoint = "source" | "target";
+type DragPreview = {
+  endpoint: EdgeEndpoint;
+  point: { x: number; y: number };
+};
 
 const visualStateColors: Record<string, string> = {
   idle: "#52525b",
@@ -73,6 +79,30 @@ function getCubicPoint(
   };
 }
 
+function getNodeTargetAtClientPoint(clientX: number, clientY: number) {
+  const nodeElement = document
+    .elementsFromPoint(clientX, clientY)
+    .find((element) => element.classList.contains("react-flow__node"))
+    ?.closest<HTMLElement>(".react-flow__node");
+  const nodeId = nodeElement?.dataset.id;
+  if (!nodeElement || !nodeId) {
+    return null;
+  }
+
+  const rect = nodeElement.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) {
+    return null;
+  }
+
+  return {
+    nodeId,
+    anchor: {
+      x: Math.min(1, Math.max(0, (clientX - rect.left) / rect.width)),
+      y: Math.min(1, Math.max(0, (clientY - rect.top) / rect.height)),
+    },
+  };
+}
+
 export const EdgeComponent = memo(function EdgeComponent({
   id,
   source,
@@ -89,24 +119,33 @@ export const EdgeComponent = memo(function EdgeComponent({
   selected,
 }: EdgeProps<GraphEdge>) {
   const { screenToFlowPosition } = useReactFlow();
+  const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
   const anchoredSourceX = data?.sourceAnchor?.x ?? sourceX;
   const anchoredSourceY = data?.sourceAnchor?.y ?? sourceY;
   const anchoredTargetX = data?.targetAnchor?.x ?? targetX;
   const anchoredTargetY = data?.targetAnchor?.y ?? targetY;
   const controlPoint = data?.controlPoint;
   const isSelfLoop = source === target;
+  const renderedSourceX =
+    dragPreview?.endpoint === "source" ? dragPreview.point.x : anchoredSourceX;
+  const renderedSourceY =
+    dragPreview?.endpoint === "source" ? dragPreview.point.y : anchoredSourceY;
+  const renderedTargetX =
+    dragPreview?.endpoint === "target" ? dragPreview.point.x : anchoredTargetX;
+  const renderedTargetY =
+    dragPreview?.endpoint === "target" ? dragPreview.point.y : anchoredTargetY;
 
   const [defaultPath, defaultLabelX, defaultLabelY] = getBezierPath({
-    sourceX: anchoredSourceX,
-    sourceY: anchoredSourceY,
+    sourceX: renderedSourceX,
+    sourceY: renderedSourceY,
     sourcePosition: data?.sourceAnchor?.position ?? sourcePosition,
-    targetX: anchoredTargetX,
-    targetY: anchoredTargetY,
+    targetX: renderedTargetX,
+    targetY: renderedTargetY,
     targetPosition: data?.targetAnchor?.position ?? targetPosition,
   });
 
-  const selfLoopCenterX = (anchoredSourceX + anchoredTargetX) / 2;
-  const selfLoopCenterY = Math.max(anchoredSourceY, anchoredTargetY) + 12;
+  const selfLoopCenterX = (renderedSourceX + renderedTargetX) / 2;
+  const selfLoopCenterY = Math.max(renderedSourceY, renderedTargetY) + 12;
   const selfLoopLift = 72;
   const selfLoopSpread = 44;
   const selfLoopControl1 = {
@@ -119,30 +158,30 @@ export const EdgeComponent = memo(function EdgeComponent({
   };
 
   const path = isSelfLoop
-    ? `M ${anchoredSourceX},${anchoredSourceY} C ${selfLoopControl1.x},${selfLoopControl1.y} ${selfLoopControl2.x},${selfLoopControl2.y} ${anchoredTargetX},${anchoredTargetY}`
+    ? `M ${renderedSourceX},${renderedSourceY} C ${selfLoopControl1.x},${selfLoopControl1.y} ${selfLoopControl2.x},${selfLoopControl2.y} ${renderedTargetX},${renderedTargetY}`
     : controlPoint
-      ? `M ${anchoredSourceX},${anchoredSourceY} Q ${controlPoint.x},${controlPoint.y} ${anchoredTargetX},${anchoredTargetY}`
+      ? `M ${renderedSourceX},${renderedSourceY} Q ${controlPoint.x},${controlPoint.y} ${renderedTargetX},${renderedTargetY}`
       : defaultPath;
   const labelPoint = isSelfLoop
     ? getCubicPoint(
-        anchoredSourceX,
-        anchoredSourceY,
+        renderedSourceX,
+        renderedSourceY,
         selfLoopControl1.x,
         selfLoopControl1.y,
         selfLoopControl2.x,
         selfLoopControl2.y,
-        anchoredTargetX,
-        anchoredTargetY,
+        renderedTargetX,
+        renderedTargetY,
         0.5
       )
     : controlPoint
       ? getQuadraticPoint(
-          anchoredSourceX,
-          anchoredSourceY,
+          renderedSourceX,
+          renderedSourceY,
           controlPoint.x,
           controlPoint.y,
-          anchoredTargetX,
-          anchoredTargetY,
+          renderedTargetX,
+          renderedTargetY,
           0.5
         )
       : { x: defaultLabelX, y: defaultLabelY };
@@ -195,6 +234,76 @@ export const EdgeComponent = memo(function EdgeComponent({
     [id, screenToFlowPosition]
   );
 
+  const onEndpointPointerDown = useCallback(
+    (endpoint: EdgeEndpoint) => (event: React.PointerEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      document.body.style.cursor = "grabbing";
+
+      const setPreviewPoint = (clientX: number, clientY: number) => {
+        setDragPreview({
+          endpoint,
+          point: screenToFlowPosition({ x: clientX, y: clientY }),
+        });
+      };
+
+      setPreviewPoint(event.clientX, event.clientY);
+
+      const move = (moveEvent: PointerEvent) => {
+        setPreviewPoint(moveEvent.clientX, moveEvent.clientY);
+      };
+
+      const up = (upEvent: PointerEvent) => {
+        document.body.style.cursor = "";
+        setDragPreview(null);
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+
+        const nextTarget = getNodeTargetAtClientPoint(
+          upEvent.clientX,
+          upEvent.clientY
+        );
+        if (!nextTarget) {
+          return;
+        }
+
+        const graphEdge = useGraphStore
+          .getState()
+          .graph?.edges.find((edge) => edge.id === id);
+        if (!graphEdge) {
+          return;
+        }
+
+        const metadata = { ...(graphEdge.metadata ?? {}) };
+        delete metadata.controlPoint;
+
+        if (endpoint === "target") {
+          metadata.targetAnchor = nextTarget.anchor;
+          useGraphStore.getState().reconnectEdge(
+            id,
+            graphEdge.source,
+            nextTarget.nodeId,
+            metadata
+          );
+          return;
+        }
+
+        metadata.sourceAnchor = nextTarget.anchor;
+        useGraphStore.getState().reconnectEdge(
+          id,
+          nextTarget.nodeId,
+          graphEdge.target,
+          metadata
+        );
+      };
+
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up, { once: true });
+    },
+    [id, screenToFlowPosition]
+  );
+
   return (
     <>
       {selected && (
@@ -231,6 +340,42 @@ export const EdgeComponent = memo(function EdgeComponent({
               onPointerDown={onControlPointerDown}
               className="h-3 w-3 rounded-full border border-indigo-200 bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.75)] cursor-grab active:cursor-grabbing"
               title="Drag to reshape edge"
+            />
+          </div>
+        </EdgeLabelRenderer>
+      )}
+      {selected && !isSelfLoop && (
+        <EdgeLabelRenderer>
+          <div
+            style={{
+              transform: `translate(-50%, -50%) translate(${renderedSourceX}px, ${renderedSourceY}px)`,
+              pointerEvents: "all",
+              zIndex: 3,
+            }}
+            className="absolute nodrag nopan"
+          >
+            <div
+              onPointerDown={onEndpointPointerDown("source")}
+              className="h-2.5 w-2.5 rounded-full border border-zinc-200 bg-zinc-700 shadow-[0_0_8px_rgba(24,24,27,0.9)] cursor-grab active:cursor-grabbing"
+              title="Drag edge tail to reconnect"
+            />
+          </div>
+        </EdgeLabelRenderer>
+      )}
+      {selected && !isSelfLoop && (
+        <EdgeLabelRenderer>
+          <div
+            style={{
+              transform: `translate(-50%, -50%) translate(${renderedTargetX}px, ${renderedTargetY}px)`,
+              pointerEvents: "all",
+              zIndex: 3,
+            }}
+            className="absolute nodrag nopan"
+          >
+            <div
+              onPointerDown={onEndpointPointerDown("target")}
+              className="h-3.5 w-3.5 rounded-full border border-emerald-200 bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.75)] cursor-grab active:cursor-grabbing"
+              title="Drag edge head to reconnect"
             />
           </div>
         </EdgeLabelRenderer>

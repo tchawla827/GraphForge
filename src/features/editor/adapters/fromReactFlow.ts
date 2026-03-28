@@ -26,6 +26,28 @@ export function handleEdgesChange(changes: EdgeChange[]) {
   }
 }
 
+export function handleReconnect(
+  edgeId: string,
+  newSource: string,
+  newTarget: string,
+  config: GraphConfig,
+  metadata?: Record<string, unknown>
+) {
+  const { reconnectEdge, graph } = useGraphStore.getState();
+  if (!graph) return;
+
+  if (!config.allowSelfLoops && newSource === newTarget) return;
+  if (!config.allowParallelEdges) {
+    const newKey = getParallelEdgeKey(newSource, newTarget, config.directed);
+    const exists = graph.edges.some(
+      (e) => e.id !== edgeId && getParallelEdgeKey(e.source, e.target, config.directed) === newKey
+    );
+    if (exists) return;
+  }
+
+  reconnectEdge(edgeId, newSource, newTarget, metadata);
+}
+
 export function handleConnect(
   connection: Connection,
   config: GraphConfig,

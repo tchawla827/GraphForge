@@ -28,6 +28,12 @@ interface GraphActions {
     edgeId: string,
     patch: Partial<Pick<GraphEdge, "weight" | "label" | "metadata">>
   ) => void;
+  reconnectEdge: (
+    edgeId: string,
+    newSource: string,
+    newTarget: string,
+    metadata?: Record<string, unknown>
+  ) => void;
   updateConfig: (patch: Partial<GraphConfig>) => void;
   markClean: () => void;
 }
@@ -138,6 +144,35 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
         ...graph,
         edges: graph.edges.map((e) =>
           e.id === edgeId ? { ...e, ...patch } : e
+        ),
+      },
+      isDirty: true,
+    });
+  },
+
+  reconnectEdge(edgeId, newSource, newTarget, metadata) {
+    const { graph } = get();
+    if (!graph) return;
+
+    const { allowSelfLoops, allowParallelEdges, directed } = graph.config;
+    if (!allowSelfLoops && newSource === newTarget) return;
+    if (!allowParallelEdges) {
+      const newKey = getParallelEdgeKey(newSource, newTarget, directed);
+      const exists = graph.edges.some(
+        (e) =>
+          e.id !== edgeId &&
+          getParallelEdgeKey(e.source, e.target, directed) === newKey
+      );
+      if (exists) return;
+    }
+
+    set({
+      graph: {
+        ...graph,
+        edges: graph.edges.map((e) =>
+          e.id === edgeId
+            ? { ...e, source: newSource, target: newTarget, metadata: metadata ?? e.metadata }
+            : e
         ),
       },
       isDirty: true,

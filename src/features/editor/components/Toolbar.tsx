@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Download, Upload, Share2, Play } from "lucide-react";
 import { useUiStore } from "@/features/editor/store/uiStore";
 import { useGraphStore } from "@/features/editor/store/graphStore";
+import { usePlaybackStore } from "@/features/editor/store/playbackStore";
 import { Button } from "@/components/ui/button";
 import { ImportModal } from "./ImportModal";
 
@@ -27,8 +28,9 @@ const saveStatusColor: Record<string, string> = {
 };
 
 export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
-  const { saveStatus } = useUiStore();
+  const { saveStatus, setActivePanel } = useUiStore();
   const { graph } = useGraphStore();
+  const runStatus = usePlaybackStore((s) => s.runStatus);
   const [importOpen, setImportOpen] = useState(false);
 
   function exportJson() {
@@ -94,9 +96,12 @@ export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
         <Button
           variant="ghost"
           size="sm"
-          title="Run algorithm (coming soon)"
-          disabled
-          className="gap-1.5 text-xs text-zinc-500"
+          title="Run algorithm"
+          onClick={() => setActivePanel("algorithm")}
+          disabled={!graph}
+          className={`gap-1.5 text-xs ${
+            runStatus === "playing" ? "text-indigo-400" : ""
+          }`}
         >
           <Play size={14} />
           Run

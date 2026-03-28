@@ -7,6 +7,7 @@ import {
   normalizeEdgesForConfig,
 } from "@/lib/graph/utils";
 import { useSelectionStore } from "@/features/editor/store/selectionStore";
+import { usePlaybackStore } from "@/features/editor/store/playbackStore";
 
 interface GraphState {
   graph: CanonicalGraph | null;
@@ -59,6 +60,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
       graph: { ...graph, nodes: [...graph.nodes, newNode] },
       isDirty: true,
     });
+    usePlaybackStore.getState().invalidateRun();
   },
 
   removeNode(nodeId) {
@@ -76,6 +78,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
       graph: nextGraph,
       isDirty: true,
     });
+    usePlaybackStore.getState().invalidateRun();
   },
 
   addEdge(source, target, metadata) {
@@ -106,6 +109,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
       graph: { ...graph, edges: [...graph.edges, newEdge] },
       isDirty: true,
     });
+    usePlaybackStore.getState().invalidateRun();
   },
 
   removeEdge(edgeId) {
@@ -120,6 +124,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
       graph: nextGraph,
       isDirty: true,
     });
+    usePlaybackStore.getState().invalidateRun();
   },
 
   updateNode(nodeId, patch) {
@@ -177,6 +182,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
       },
       isDirty: true,
     });
+    usePlaybackStore.getState().invalidateRun();
   },
 
   updateConfig(patch) {
@@ -193,6 +199,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
       graph: nextGraph,
       isDirty: true,
     });
+    usePlaybackStore.getState().invalidateRun();
   },
 
   markClean() {

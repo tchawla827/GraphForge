@@ -7,7 +7,11 @@ import { SelectionTab } from "./tabs/SelectionTab";
 import { AlgorithmTab } from "./tabs/AlgorithmTab";
 import { HelpTab } from "./tabs/HelpTab";
 
-export function InspectorPanel() {
+interface InspectorPanelProps {
+  projectId?: string;
+}
+
+export function InspectorPanel({ projectId }: InspectorPanelProps) {
   const { activePanel, setActivePanel } = useUiStore();
 
   return (
@@ -52,7 +56,7 @@ export function InspectorPanel() {
             <SelectionTab />
           </TabsContent>
           <TabsContent value="algorithm" className="mt-0">
-            <AlgorithmTab />
+            <AlgorithmTab projectId={projectId} />
           </TabsContent>
           <TabsContent value="help" className="mt-0">
             <HelpTab />

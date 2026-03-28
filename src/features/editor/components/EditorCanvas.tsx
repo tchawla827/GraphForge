@@ -21,6 +21,7 @@ import "@xyflow/react/dist/style.css";
 import { useGraphStore } from "@/features/editor/store/graphStore";
 import { useSelectionStore } from "@/features/editor/store/selectionStore";
 import { useUiStore } from "@/features/editor/store/uiStore";
+import { usePlaybackStore } from "@/features/editor/store/playbackStore";
 import { toReactFlow } from "@/features/editor/adapters/toReactFlow";
 import {
   handleNodesChange,
@@ -80,23 +81,25 @@ export function EditorCanvas() {
     clearSelection,
   } = useSelectionStore();
   const { toolMode, showEdgeLabels, showEdgeWeights } = useUiStore();
+  const visualHighlights = usePlaybackStore((s) => s.visualHighlights);
   const { screenToFlowPosition } = useReactFlow();
   const pendingConnectionAnchor = useRef<{
     nodeId: string;
     sourceAnchor?: { x: number; y: number };
   } | null>(null);
 
+  const hasHighlights = Object.keys(visualHighlights).length > 0;
   const flow = useMemo(
     () =>
       graph
         ? toReactFlow(
             graph,
-            undefined,
+            hasHighlights ? visualHighlights : undefined,
             { selectedNodeIds, selectedEdgeIds },
             { showEdgeLabels, showEdgeWeights }
           )
         : { nodes: [], edges: [] },
-    [graph, selectedNodeIds, selectedEdgeIds, showEdgeLabels, showEdgeWeights]
+    [graph, visualHighlights, hasHighlights, selectedNodeIds, selectedEdgeIds, showEdgeLabels, showEdgeWeights]
   );
   const { nodes, edges } = flow;
 

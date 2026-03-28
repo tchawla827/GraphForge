@@ -76,7 +76,7 @@ function EditorInner({ projectId }: { projectId: string }) {
       <div className="flex flex-1 overflow-hidden">
         <ToolRail />
         <EditorCanvas />
-        <InspectorPanel />
+        <InspectorPanel projectId={projectId} />
       </div>
       <PlaybackPanel />
     </div>

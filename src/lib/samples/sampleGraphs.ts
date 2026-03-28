@@ -112,3 +112,20 @@ export const cycleSample: SampleGraph = {
 };
 
 export const ALL_SAMPLES: SampleGraph[] = [dijkstraSample, dagSample, mstSample, cycleSample];
+
+export function getSampleByKey(sampleKey: string): SampleGraph | undefined {
+  return ALL_SAMPLES.find((sample) => sample.key === sampleKey);
+}
+
+export function hydrateSampleGraph(sampleKey: string): CanonicalGraph | null {
+  const sample = getSampleByKey(sampleKey);
+  if (!sample) return null;
+
+  return {
+    ...sample.graph,
+    id: `sample-${sample.key}`,
+    projectId: `sample-${sample.key}`,
+    createdAt: "2026-03-28T00:00:00.000Z",
+    updatedAt: "2026-03-28T00:00:00.000Z",
+  };
+}

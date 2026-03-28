@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/client";
 import { Prisma } from "@prisma/client";
-import { getGraph, type GraphResult } from "@/server/graphService";
+import { getGraph } from "@/server/graphService";
 import { validateAlgorithmInput } from "@/lib/algorithms/validate";
 import { getAlgorithm } from "@/lib/algorithms/registry";
 import { track } from "@/lib/analytics/track";

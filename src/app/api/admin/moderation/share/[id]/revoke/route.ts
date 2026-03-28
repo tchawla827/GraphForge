@@ -41,7 +41,5 @@ export async function POST(_req: NextRequest, ctx: RouteContext) {
     data: { isActive: false, revokedAt: new Date() },
   });
 
-  console.log(`[admin] Share ${id} revoked by ${session.user.email} at ${new Date().toISOString()}`);
-
   return NextResponse.json({ data: { revoked: true } });
 }

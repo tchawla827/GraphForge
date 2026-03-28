@@ -17,11 +17,10 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: process.env.CI
-    ? {
-        command: "pnpm start",
-        url: "http://localhost:3000",
-        reuseExistingServer: false,
-      }
-    : undefined,
+  webServer: {
+    command: "pnpm dev",
+    url: process.env.E2E_BASE_URL ?? "http://localhost:3000",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  },
 });

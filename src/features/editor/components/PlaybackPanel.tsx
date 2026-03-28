@@ -54,7 +54,7 @@ export function PlaybackPanel() {
   const atEnd = currentStep >= totalSteps - 1;
 
   return (
-    <div className="border-t border-zinc-800 bg-zinc-950 shrink-0">
+    <div className="border-t border-zinc-800 bg-zinc-950 shrink-0" data-testid="playback-panel">
       <div className="flex items-center gap-2 px-3 py-1.5">
         {/* Controls */}
         <div className="flex items-center gap-0.5">
@@ -122,7 +122,7 @@ export function PlaybackPanel() {
         </div>
 
         {/* Step counter */}
-        <span className="text-[10px] text-zinc-500 ml-2 tabular-nums">
+        <span className="text-[10px] text-zinc-500 ml-2 tabular-nums" data-testid="step-counter">
           {Math.max(0, currentStep + 1)}/{totalSteps}
         </span>
 

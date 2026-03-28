@@ -13,8 +13,9 @@ import type { CanonicalGraph } from "@/types/graph";
 interface SharedEditorClientProps {
   projectTitle: string;
   graph: CanonicalGraph;
-  slugOrToken: string;
-  isAuthenticated: boolean;
+  slugOrToken?: string;
+  isAuthenticated?: boolean;
+  showForkButton?: boolean;
 }
 
 function SharedEditorInner({
@@ -22,6 +23,7 @@ function SharedEditorInner({
   graph,
   slugOrToken,
   isAuthenticated,
+  showForkButton = true,
 }: SharedEditorClientProps) {
   const { setGraph } = useGraphStore();
 
@@ -40,7 +42,12 @@ function SharedEditorInner({
           read-only
         </span>
         <div className="flex-1" />
-        <ForkButton slugOrToken={slugOrToken} isAuthenticated={isAuthenticated} />
+        {showForkButton && slugOrToken ? (
+          <ForkButton
+            slugOrToken={slugOrToken}
+            isAuthenticated={Boolean(isAuthenticated)}
+          />
+        ) : null}
       </div>
 
       <div className="flex flex-1 overflow-hidden relative">

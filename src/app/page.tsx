@@ -1,7 +1,11 @@
 import { auth } from "@/lib/auth/config";
 import { signIn } from "@/lib/auth/config";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/navbar";
+import { ALL_SAMPLES } from "@/lib/samples";
+import { cn } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
 const ALGORITHM_NAMES = [
@@ -62,6 +66,12 @@ export default async function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <Link
+              href="/demo/dijkstra"
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto")}
+            >
+              Try Demo
+            </Link>
             <form
               action={async () => {
                 "use server";
@@ -108,6 +118,27 @@ export default async function LandingPage() {
               >
                 {name}
               </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-border py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
+          <h2 className="text-xl font-semibold text-zinc-200">Public sample demos</h2>
+          <p className="text-sm text-zinc-500">
+            Open a read-only sample workspace instantly. No account required.
+          </p>
+          <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
+            {ALL_SAMPLES.slice(0, 3).map((sample) => (
+              <Link
+                key={sample.key}
+                href={`/demo/${sample.key}`}
+                className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4 transition-colors hover:bg-zinc-900"
+              >
+                <p className="text-sm font-semibold text-zinc-100">{sample.label}</p>
+                <p className="mt-1 text-xs leading-relaxed text-zinc-500">{sample.description}</p>
+              </Link>
             ))}
           </div>
         </div>

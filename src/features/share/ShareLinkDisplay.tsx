@@ -57,6 +57,7 @@ export function ShareLinkDisplay({
           <input
             readOnly
             value={url}
+            data-testid="share-url-input"
             className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-300 font-mono truncate outline-none"
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />

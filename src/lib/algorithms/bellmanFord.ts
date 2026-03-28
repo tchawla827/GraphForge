@@ -83,7 +83,7 @@ export const bellmanFord: AlgorithmFn = ({ graph, config }) => {
 
   // V-th iteration: detect negative cycles
   let hasNegativeCycle = false;
-  for (const { edgeId, from, to, weight } of edgeList) {
+  for (const { from, to, weight } of edgeList) {
     if (dist[from] === Infinity) continue;
     if (dist[from] + weight < dist[to]) {
       hasNegativeCycle = true;

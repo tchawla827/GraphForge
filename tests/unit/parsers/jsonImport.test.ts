@@ -52,7 +52,8 @@ describe("parseJsonImport", () => {
   });
 
   it("returns ok:false when schemaVersion is missing", () => {
-    const { schemaVersion: _, ...rest } = makeGraph();
+    const rest = { ...makeGraph() } as Partial<CanonicalGraph>;
+    delete rest.schemaVersion;
     const result = parseJsonImport(JSON.stringify(rest));
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -60,7 +61,8 @@ describe("parseJsonImport", () => {
   });
 
   it("returns ok:false for missing required fields (no nodes array)", () => {
-    const { nodes: _, ...rest } = makeGraph();
+    const rest = { ...makeGraph() } as Partial<CanonicalGraph>;
+    delete rest.nodes;
     const result = parseJsonImport(JSON.stringify(rest));
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -68,7 +70,8 @@ describe("parseJsonImport", () => {
   });
 
   it("returns ok:false for missing required fields (no config)", () => {
-    const { config: _, ...rest } = makeGraph();
+    const rest = { ...makeGraph() } as Partial<CanonicalGraph>;
+    delete rest.config;
     const result = parseJsonImport(JSON.stringify(rest));
     expect(result.ok).toBe(false);
     if (result.ok) return;

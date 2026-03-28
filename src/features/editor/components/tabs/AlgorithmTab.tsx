@@ -25,8 +25,19 @@ const AVAILABLE_ALGORITHMS: AlgorithmKey[] = [
   "dijkstra",
   "astar",
   "bellman_ford",
+  "topological_sort",
+  "cycle_detection",
+  "prim",
+  "kruskal",
 ];
 
+const NEEDS_SOURCE: AlgorithmKey[] = [
+  "bfs",
+  "dfs",
+  "dijkstra",
+  "astar",
+  "bellman_ford",
+];
 const NEEDS_TARGET: AlgorithmKey[] = ["astar", "dijkstra", "bellman_ford"];
 const NEEDS_HEURISTIC: AlgorithmKey[] = ["astar"];
 
@@ -54,17 +65,18 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
     }
   }, [nodes, sourceNodeId]);
 
+  const showSource = NEEDS_SOURCE.includes(algorithm);
   const showTarget = NEEDS_TARGET.includes(algorithm);
   const showHeuristic = NEEDS_HEURISTIC.includes(algorithm);
 
   const buildConfig = useCallback((): AlgorithmRunConfig => {
     return {
       algorithm,
-      sourceNodeId: sourceNodeId || undefined,
+      sourceNodeId: showSource && sourceNodeId ? sourceNodeId : undefined,
       targetNodeId: showTarget && targetNodeId ? targetNodeId : undefined,
       heuristic: showHeuristic ? heuristic : undefined,
     };
-  }, [algorithm, sourceNodeId, targetNodeId, showTarget, showHeuristic, heuristic]);
+  }, [algorithm, sourceNodeId, targetNodeId, showSource, showTarget, showHeuristic, heuristic]);
 
   const validation = useMemo(() => {
     if (!graph) return { ok: false as const, error: "No graph loaded" };
@@ -121,7 +133,10 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
           Algorithm
         </label>
         <Select value={algorithm} onValueChange={(v) => setAlgorithm(v as AlgorithmKey)}>
-          <SelectTrigger className="w-full h-7 text-xs bg-zinc-900 border-zinc-700">
+          <SelectTrigger
+            className="w-full h-7 text-xs bg-zinc-900 border-zinc-700"
+            aria-label="Algorithm"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -135,23 +150,28 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
       </div>
 
       {/* Source node */}
-      <div className="space-y-1">
-        <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
-          Source node
-        </label>
-        <Select value={sourceNodeId} onValueChange={(v) => v && setSourceNodeId(v)}>
-          <SelectTrigger className="w-full h-7 text-xs bg-zinc-900 border-zinc-700">
-            <SelectValue placeholder="Select source..." />
-          </SelectTrigger>
-          <SelectContent>
-            {nodes.map((n) => (
-              <SelectItem key={n.id} value={n.id}>
-                {n.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {showSource && (
+        <div className="space-y-1">
+          <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
+            Source node
+          </label>
+          <Select value={sourceNodeId} onValueChange={(v) => v && setSourceNodeId(v)}>
+            <SelectTrigger
+              className="w-full h-7 text-xs bg-zinc-900 border-zinc-700"
+              aria-label="Source node"
+            >
+              <SelectValue placeholder="Select source..." />
+            </SelectTrigger>
+            <SelectContent>
+              {nodes.map((n) => (
+                <SelectItem key={n.id} value={n.id}>
+                  {n.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Target node (conditional) */}
       {showTarget && (
@@ -160,7 +180,10 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
             Target node {algorithm === "astar" ? "(required)" : "(optional)"}
           </label>
           <Select value={targetNodeId} onValueChange={(v) => v && setTargetNodeId(v)}>
-            <SelectTrigger className="w-full h-7 text-xs bg-zinc-900 border-zinc-700">
+            <SelectTrigger
+              className="w-full h-7 text-xs bg-zinc-900 border-zinc-700"
+              aria-label="Target node"
+            >
               <SelectValue placeholder="Select target..." />
             </SelectTrigger>
             <SelectContent>

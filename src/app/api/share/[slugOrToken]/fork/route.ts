@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { forkSharedProject } from "@/server/shareService";
+import { track } from "@/lib/analytics/track";
 
 interface RouteContext {
   params: Promise<{ slugOrToken: string }>;
@@ -25,5 +26,6 @@ export async function POST(_req: NextRequest, ctx: RouteContext) {
     );
   }
 
+  void track({ name: "project_forked" });
   return NextResponse.json({ project: result.data }, { status: 201 });
 }

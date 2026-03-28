@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/client";
 import { Prisma } from "@prisma/client";
 import type { Project } from "@prisma/client";
+import { track } from "@/lib/analytics/track";
 
 export interface CreateProjectInput {
   title: string;
@@ -27,7 +28,7 @@ export async function createProject(
   ownerId: string,
   input: CreateProjectInput
 ): Promise<Project> {
-  return prisma.project.create({
+  const project = await prisma.project.create({
     data: {
       ownerId,
       title: input.title.trim(),
@@ -43,6 +44,8 @@ export async function createProject(
       },
     },
   });
+  void track({ name: "project_created" });
+  return project;
 }
 
 export async function listProjects(

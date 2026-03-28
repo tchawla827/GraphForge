@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const getShareBySlugOrToken = vi.fn();
-const looksLikePrivateShareToken = vi.fn();
+const { getShareBySlugOrToken, looksLikePrivateShareToken } = vi.hoisted(() => ({
+  getShareBySlugOrToken: vi.fn(),
+  looksLikePrivateShareToken: vi.fn(),
+}));
 
 vi.mock("@/server/shareService", () => ({
   getShareBySlugOrToken,

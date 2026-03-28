@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { parseJsonImport } from "@/lib/parsers/jsonImport";
 import { importGraph } from "@/server/importService";
+import { track } from "@/lib/analytics/track";
 
 const MAX_INPUT_BYTES = 1024 * 1024;
 
@@ -90,6 +91,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     );
   }
 
+  void track({ name: "graph_imported", format: "json" });
   return NextResponse.json({
     data: {
       graph: result.data,

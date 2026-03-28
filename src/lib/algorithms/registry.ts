@@ -5,6 +5,10 @@ import { dfs } from "./dfs";
 import { dijkstra } from "./dijkstra";
 import { astar } from "./astar";
 import { bellmanFord } from "./bellmanFord";
+import { topologicalSort } from "./topologicalSort";
+import { cycleDetection } from "./cycleDetection";
+import { prim } from "./prim";
+import { kruskal } from "./kruskal";
 
 export const algorithmRegistry: Record<string, AlgorithmFn> = {
   bfs,
@@ -12,6 +16,10 @@ export const algorithmRegistry: Record<string, AlgorithmFn> = {
   dijkstra,
   astar,
   bellman_ford: bellmanFord,
+  topological_sort: topologicalSort,
+  cycle_detection: cycleDetection,
+  prim,
+  kruskal,
 };
 
 export const algorithmLabels: Record<AlgorithmKey, string> = {

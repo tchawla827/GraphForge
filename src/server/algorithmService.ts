@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { getGraph, type GraphResult } from "@/server/graphService";
 import { validateAlgorithmInput } from "@/lib/algorithms/validate";
 import { getAlgorithm } from "@/lib/algorithms/registry";
+import { track } from "@/lib/analytics/track";
 import type { AlgorithmRunConfig } from "@/types/graph";
 import type { AlgorithmOutput } from "@/lib/algorithms/types";
 
@@ -73,6 +74,8 @@ export async function runAlgorithm(
       eventCount: output.events.length,
     },
   });
+
+  void track({ name: "algorithm_run", algorithm: config.algorithm });
 
   return { ok: true, data: output };
 }

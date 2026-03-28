@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/client";
 import { Prisma } from "@prisma/client";
 import { generateToken, hashToken } from "@/lib/share/tokenGenerator";
 import { generateUniqueSlug } from "@/lib/share/slugGenerator";
+import { track } from "@/lib/analytics/track";
 import type { CanonicalGraph } from "@/types/graph";
 
 export type ShareServiceError = "not_found" | "forbidden" | "revoked";
@@ -81,6 +82,7 @@ export async function createPublicShare(
     },
   });
 
+  void track({ name: "share_created", type: "public" });
   return {
     ok: true,
     data: {
@@ -117,6 +119,7 @@ export async function createPrivateShare(
     },
   });
 
+  void track({ name: "share_created", type: "private_token" });
   return {
     ok: true,
     data: {

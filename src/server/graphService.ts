@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/db/client";
 import { Prisma } from "@prisma/client";
 import { CanonicalGraphSchema } from "@/lib/graph/validate";
+import {
+  scopeGraphEntityId,
+  unscopeGraphEntityId,
+} from "@/lib/graph/persistenceIds";
 import type { CanonicalGraph } from "@/types/graph";
 
 export type GraphServiceError =
@@ -54,15 +58,15 @@ export async function getGraph(
       allowParallelEdges: record.allowParallelEdges,
     },
     nodes: record.nodes.map((n) => ({
-      id: n.id,
+      id: unscopeGraphEntityId(record.id, n.id),
       label: n.label,
       position: { x: n.x, y: n.y },
       metadata: (n.metadataJson as Record<string, unknown>) ?? undefined,
     })),
     edges: record.edges.map((e) => ({
-      id: e.id,
-      source: e.sourceNodeId,
-      target: e.targetNodeId,
+      id: unscopeGraphEntityId(record.id, e.id),
+      source: unscopeGraphEntityId(record.id, e.sourceNodeId),
+      target: unscopeGraphEntityId(record.id, e.targetNodeId),
       weight: e.weight ?? null,
       label: e.label ?? null,
       metadata: (e.metadataJson as Record<string, unknown>) ?? undefined,
@@ -122,10 +126,17 @@ export async function replaceGraph(
     await tx.nodeRecord.deleteMany({ where: { graphId: record.id } });
     await tx.edgeRecord.deleteMany({ where: { graphId: record.id } });
 
+    const scopedNodeIdByInputId = new Map<string, string>(
+      graph.nodes.map((node) => [
+        node.id,
+        scopeGraphEntityId(record.id, node.id),
+      ])
+    );
+
     if (graph.nodes.length > 0) {
       await tx.nodeRecord.createMany({
         data: graph.nodes.map((n) => ({
-          id: n.id,
+          id: scopedNodeIdByInputId.get(n.id)!,
           graphId: record.id,
           label: n.label,
           x: n.position.x,
@@ -140,10 +151,14 @@ export async function replaceGraph(
     if (graph.edges.length > 0) {
       await tx.edgeRecord.createMany({
         data: graph.edges.map((e) => ({
-          id: e.id,
+          id: scopeGraphEntityId(record.id, e.id),
           graphId: record.id,
-          sourceNodeId: e.source,
-          targetNodeId: e.target,
+          sourceNodeId:
+            scopedNodeIdByInputId.get(e.source) ??
+            scopeGraphEntityId(record.id, e.source),
+          targetNodeId:
+            scopedNodeIdByInputId.get(e.target) ??
+            scopeGraphEntityId(record.id, e.target),
           weight: e.weight ?? null,
           label: e.label ?? null,
           metadataJson: e.metadata

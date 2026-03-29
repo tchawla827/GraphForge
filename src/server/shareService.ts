@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/client";
 import { Prisma } from "@prisma/client";
 import { generateToken, hashToken } from "@/lib/share/tokenGenerator";
 import { generateUniqueSlug } from "@/lib/share/slugGenerator";
+import { unscopeGraphEntityId } from "@/lib/graph/persistenceIds";
 import { track } from "@/lib/analytics/track";
 import type { CanonicalGraph } from "@/types/graph";
 
@@ -238,15 +239,15 @@ export async function getShareBySlugOrToken(
       allowParallelEdges: record.allowParallelEdges,
     },
     nodes: record.nodes.map((n) => ({
-      id: n.id,
+      id: unscopeGraphEntityId(record.id, n.id),
       label: n.label,
       position: { x: n.x, y: n.y },
       metadata: (n.metadataJson as Record<string, unknown>) ?? undefined,
     })),
     edges: record.edges.map((e) => ({
-      id: e.id,
-      source: e.sourceNodeId,
-      target: e.targetNodeId,
+      id: unscopeGraphEntityId(record.id, e.id),
+      source: unscopeGraphEntityId(record.id, e.sourceNodeId),
+      target: unscopeGraphEntityId(record.id, e.targetNodeId),
       weight: e.weight ?? null,
       label: e.label ?? null,
       metadata: (e.metadataJson as Record<string, unknown>) ?? undefined,

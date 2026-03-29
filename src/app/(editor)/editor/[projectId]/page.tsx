@@ -73,7 +73,18 @@ function EditorInner({ projectId }: { projectId: string }) {
 
   return (
     <div className="flex flex-col h-full">
-      <Toolbar projectTitle={title} projectId={projectId} />
+      <Toolbar
+        projectTitle={title}
+        projectId={projectId}
+        onRename={async (newTitle) => {
+          setTitle(newTitle);
+          await fetch(`/api/projects/${projectId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: newTitle }),
+          });
+        }}
+      />
       <div className="flex flex-1 overflow-hidden">
         <ToolRail />
         <div className="relative flex flex-1">

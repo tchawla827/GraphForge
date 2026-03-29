@@ -64,11 +64,11 @@ export async function listProjects(
   });
 
   return projects.map((p) => {
-    const graph = p.graphs ?? null;
+    const graph = Array.isArray(p.graphs) ? p.graphs[0] : p.graphs ?? null;
     return {
       ...p,
-      nodeCount: graph?._count.nodes ?? 0,
-      edgeCount: graph?._count.edges ?? 0,
+      nodeCount: graph?._count?.nodes ?? 0,
+      edgeCount: graph?._count?.edges ?? 0,
     };
   });
 }

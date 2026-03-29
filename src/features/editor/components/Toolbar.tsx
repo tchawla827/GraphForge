@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Upload, Share2, Play, ChevronLeft } from "lucide-react";
 
 import Link from "next/link";
@@ -15,6 +15,7 @@ import { ExportMenu } from "./ExportMenu";
 interface ToolbarProps {
   projectTitle: string;
   projectId: string;
+  onRename?: (newTitle: string) => Promise<void>;
 }
 
 const saveStatusLabel: Record<string, string> = {
@@ -31,12 +32,34 @@ const saveStatusColor: Record<string, string> = {
   error: "text-red-400/80",
 };
 
-export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
+export function Toolbar({ projectTitle, projectId, onRename }: ToolbarProps) {
   const { saveStatus, setActivePanel } = useUiStore();
   const { graph } = useGraphStore();
   const runStatus = usePlaybackStore((s) => s.runStatus);
   const [importOpen, setImportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function startEditing() {
+    if (!onRename) return;
+    setEditValue(projectTitle);
+    setEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  }
+
+  async function commitRename() {
+    setEditing(false);
+    const trimmed = editValue.trim();
+    if (!trimmed || trimmed === projectTitle || !onRename) return;
+    await onRename(trimmed);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") { e.preventDefault(); void commitRename(); }
+    if (e.key === "Escape") { setEditing(false); }
+  }
 
   return (
     <>
@@ -48,9 +71,25 @@ export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
             </Button>
           </Link>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-zinc-100 truncate max-w-[200px] leading-tight">
-              {projectTitle}
-            </span>
+            {editing ? (
+              <input
+                ref={inputRef}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={() => void commitRename()}
+                onKeyDown={handleKeyDown}
+                maxLength={100}
+                className="text-sm font-bold text-zinc-100 bg-white/5 border border-white/10 rounded px-1.5 py-0.5 leading-tight max-w-[200px] outline-none focus:border-indigo-500/50"
+              />
+            ) : (
+              <span
+                className="text-sm font-bold text-zinc-100 truncate max-w-[200px] leading-tight cursor-default select-none"
+                onDoubleClick={startEditing}
+                title={onRename ? "Double-click to rename" : undefined}
+              >
+                {projectTitle}
+              </span>
+            )}
             <span className={`text-[10px] font-medium tracking-wide uppercase ${saveStatusColor[saveStatus] ?? "text-zinc-500"}`}>
               {saveStatusLabel[saveStatus]}
             </span>

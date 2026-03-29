@@ -86,8 +86,8 @@ describe("Topological Sort", () => {
     expect(output.result.status).toBe("error");
     expect(output.result.summary).toContain("cycle");
 
-    const types = output.events.map((e) => e.type);
-    expect(types).toContain("CYCLE_DETECTED");
+    const cycleEvent = output.events.find((e) => e.type === "CYCLE_DETECTED");
+    expect(cycleEvent?.payload.cycle).toEqual(["A", "B", "C"]);
   });
 
   it("partial order in output for cyclic graph", () => {

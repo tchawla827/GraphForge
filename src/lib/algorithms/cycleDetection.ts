@@ -49,7 +49,7 @@ export const cycleDetection: AlgorithmFn = ({ graph }) => {
           const cycleStart = dfsStack.indexOf(neighbor);
           cycleNodes = dfsStack.slice(cycleStart);
           events.push(
-            eb.emit("CYCLE_DETECTED", { nodes: cycleNodes },
+            eb.emit("CYCLE_DETECTED", { cycle: cycleNodes },
               `Back edge detected: ${findLabel(nodeId)} → ${findLabel(neighbor)} — cycle: [${cycleNodes.map(findLabel).join(" → ")}]`)
           );
           return true;
@@ -113,7 +113,7 @@ export const cycleDetection: AlgorithmFn = ({ graph }) => {
         hasCycle = true;
         cycleNodes = [edge.source, edge.target];
         events.push(
-          eb.emit("CYCLE_DETECTED", { nodes: cycleNodes },
+          eb.emit("CYCLE_DETECTED", { cycle: cycleNodes },
             `Cycle detected: edge ${findLabel(edge.source)} — ${findLabel(edge.target)} connects already-joined components`)
         );
         break;

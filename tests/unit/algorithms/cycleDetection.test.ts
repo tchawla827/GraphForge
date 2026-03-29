@@ -78,8 +78,9 @@ describe("Cycle Detection", () => {
       expect(output.result.output.hasCycle).toBe(true);
       expect(output.result.output.cycle).toBeDefined();
 
-      const types = output.events.map((e) => e.type);
-      expect(types).toContain("CYCLE_DETECTED");
+      const cycleEvent = output.events.find((e) => e.type === "CYCLE_DETECTED");
+      expect(cycleEvent).toBeDefined();
+      expect(cycleEvent?.payload.cycle).toEqual(output.result.output.cycle);
     });
 
     it("result message says 'directed graph' when cycle found", () => {
@@ -106,8 +107,8 @@ describe("Cycle Detection", () => {
       const output = cycleDetection({ graph: undirectedCyclic(), config: { algorithm: "cycle_detection" } });
 
       expect(output.result.output.hasCycle).toBe(true);
-      const types = output.events.map((e) => e.type);
-      expect(types).toContain("CYCLE_DETECTED");
+      const cycleEvent = output.events.find((e) => e.type === "CYCLE_DETECTED");
+      expect(cycleEvent?.payload.cycle).toEqual(output.result.output.cycle);
     });
 
     it("result message says 'undirected graph' when cycle found", () => {

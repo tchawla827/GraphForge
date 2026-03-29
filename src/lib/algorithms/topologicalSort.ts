@@ -71,7 +71,7 @@ export const topologicalSort: AlgorithmFn = ({ graph }) => {
   if (order.length < nodeIds.length) {
     const remaining = nodeIds.filter((id) => !order.includes(id));
     events.push(
-      eb.emit("CYCLE_DETECTED", { nodes: remaining },
+      eb.emit("CYCLE_DETECTED", { cycle: remaining },
         `Cycle detected — nodes still in graph: [${remaining.map(findLabel).join(", ")}]`)
     );
 

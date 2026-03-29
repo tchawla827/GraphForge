@@ -91,4 +91,22 @@ describe("computeVisualState", () => {
     const state = computeVisualState(events, 3);
     expect(Object.keys(state).length).toBe(0);
   });
+
+  it("marks cycle nodes from the current payload shape", () => {
+    const events = [event(0, "CYCLE_DETECTED", { cycle: ["B", "C", "D"] })];
+
+    const state = computeVisualState(events, 0);
+    expect(state["B"]).toBe("path");
+    expect(state["C"]).toBe("path");
+    expect(state["D"]).toBe("path");
+  });
+
+  it("accepts legacy cycle payloads emitted as nodes", () => {
+    const events = [event(0, "CYCLE_DETECTED", { nodes: ["B", "C", "D"] })];
+
+    const state = computeVisualState(events, 0);
+    expect(state["B"]).toBe("path");
+    expect(state["C"]).toBe("path");
+    expect(state["D"]).toBe("path");
+  });
 });

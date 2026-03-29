@@ -53,7 +53,7 @@ export function computeVisualState(
       }
 
       case "CYCLE_DETECTED": {
-        const cycle = payload.cycle as string[];
+        const cycle = getCycleNodeIds(payload);
         for (const nodeId of cycle) {
           state[nodeId] = "path"; // reuse "path" style for cycle highlighting
         }
@@ -73,4 +73,16 @@ export function computeVisualState(
   }
 
   return state;
+}
+
+function getCycleNodeIds(payload: PlaybackEvent["payload"]): string[] {
+  if (Array.isArray(payload.cycle)) {
+    return payload.cycle.filter((nodeId): nodeId is string => typeof nodeId === "string");
+  }
+
+  if (Array.isArray(payload.nodes)) {
+    return payload.nodes.filter((nodeId): nodeId is string => typeof nodeId === "string");
+  }
+
+  return [];
 }

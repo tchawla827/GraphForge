@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Pencil, Trash2, Copy, Share2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Copy, Share2, LayoutDashboard } from "lucide-react";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -63,12 +64,20 @@ export function ProjectCard({
   }
 
   return (
-    <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors group relative">
-      <CardContent className="p-4">
+    <Card className="bg-zinc-900/40 backdrop-blur-md border-white/5 hover:border-primary/50 transition-all duration-300 group relative overflow-hidden hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.2)]">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      
+      <CardContent className="p-0">
         <div
-          className="cursor-pointer"
+          className="cursor-pointer p-5"
           onClick={() => router.push(`/editor/${id}`)}
         >
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-primary/30 group-hover:bg-primary/5 transition-all duration-300">
+              <LayoutDashboard size={20} className="text-zinc-500 group-hover:text-primary transition-colors" />
+            </div>
+          </div>
+
           {renaming ? (
             <input
               autoFocus
@@ -83,24 +92,34 @@ export function ProjectCard({
               }}
               onBlur={handleRename}
               onClick={(e) => e.stopPropagation()}
-              className="bg-transparent border-b border-indigo-500 text-zinc-100 text-sm font-semibold w-full outline-none mb-2"
+              className="bg-zinc-950/50 border border-primary/50 rounded px-2 py-1 text-zinc-100 text-sm font-bold w-full outline-none mb-2 focus:ring-2 ring-primary/20"
             />
           ) : (
-            <p className="text-zinc-100 text-sm font-semibold truncate mb-2">
+            <h3 className="text-zinc-100 text-sm font-bold truncate mb-1 group-hover:text-primary transition-colors">
               {title}
-            </p>
+            </h3>
           )}
 
-          <div className="flex items-center gap-3 text-xs text-zinc-500">
-            <span>{nodeCount} nodes</span>
-            <span>{edgeCount} edges</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              <span className="text-primary/70">{nodeCount}</span>
+              <span>Nodes</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-zinc-800" />
+            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              <span className="text-primary/70">{edgeCount}</span>
+              <span>Edges</span>
+            </div>
           </div>
-          <p className="text-xs text-zinc-600 mt-2">
-            {formatDistanceToNow(updatedAt)}
-          </p>
+          
+          <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+            <p className="text-[10px] font-medium text-zinc-600">
+              Edited {formatDistanceToNow(updatedAt)}
+            </p>
+          </div>
         </div>
 
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 z-20">
           <Button
             variant="ghost"
             size="sm"

@@ -16,19 +16,19 @@ export function InspectorPanel({ projectId, readOnly = false }: InspectorPanelPr
   const { activePanel, setActivePanel } = useUiStore();
 
   return (
-    <div className="w-64 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden shrink-0">
+    <div className="w-72 border-l border-white/5 bg-zinc-950/50 backdrop-blur-md flex flex-col overflow-hidden shrink-0 z-10">
       <Tabs
         value={activePanel}
         onValueChange={(v) => setActivePanel(v as ActivePanel)}
         className="flex flex-col h-full"
       >
         <TabsList
-          className={`grid rounded-none border-b border-zinc-800 bg-zinc-950 h-10 shrink-0 ${readOnly ? "grid-cols-2" : "grid-cols-4"}`}
+          className={`grid rounded-none border-b border-white/5 bg-transparent h-12 shrink-0 p-1 gap-1 ${readOnly ? "grid-cols-2" : "grid-cols-4"}`}
         >
           {!readOnly && (
             <TabsTrigger
               value="graph"
-              className="text-xs data-[state=active]:bg-zinc-800 rounded-none"
+              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-white/5 data-[state=active]:text-primary rounded-md transition-all"
             >
               Graph
             </TabsTrigger>
@@ -36,24 +36,25 @@ export function InspectorPanel({ projectId, readOnly = false }: InspectorPanelPr
           {!readOnly && (
             <TabsTrigger
               value="selection"
-              className="text-xs data-[state=active]:bg-zinc-800 rounded-none"
+              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-white/5 data-[state=active]:text-primary rounded-md transition-all"
             >
-              Selection
+              Select
             </TabsTrigger>
           )}
           <TabsTrigger
             value="algorithm"
-            className="text-xs data-[state=active]:bg-zinc-800 rounded-none"
+            className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-white/5 data-[state=active]:text-primary rounded-md transition-all"
           >
             Algo
           </TabsTrigger>
           <TabsTrigger
             value="help"
-            className="text-xs data-[state=active]:bg-zinc-800 rounded-none"
+            className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-white/5 data-[state=active]:text-primary rounded-md transition-all"
           >
             Help
           </TabsTrigger>
         </TabsList>
+
 
         <div className="flex-1 overflow-y-auto">
           {!readOnly && (

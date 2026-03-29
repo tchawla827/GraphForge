@@ -27,16 +27,23 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-screen-xl mx-auto px-6 py-12 relative">
+      <div className="flex items-end justify-between mb-12 border-b border-white/5 pb-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Projects</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Build graphs, run algorithms, share your work.
+          <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+            Project <span className="text-primary">Workspace</span>
+          </h1>
+          <p className="text-zinc-500 mt-3 text-base font-medium">
+            Architect graphs, analyze data structures, and share engineering insights.
           </p>
         </div>
-        {projects && projects.length > 0 && <CreateProjectButton />}
+        {projects && projects.length > 0 && (
+          <div className="pb-1">
+            <CreateProjectButton />
+          </div>
+        )}
       </div>
+
 
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

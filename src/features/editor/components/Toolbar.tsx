@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Upload, Share2, Play } from "lucide-react";
+import { Download, Upload, Share2, Play, ChevronLeft } from "lucide-react";
+
+import Link from "next/link";
 import { useUiStore } from "@/features/editor/store/uiStore";
 import { useGraphStore } from "@/features/editor/store/graphStore";
 import { usePlaybackStore } from "@/features/editor/store/playbackStore";
@@ -22,10 +24,10 @@ const saveStatusLabel: Record<string, string> = {
 };
 
 const saveStatusColor: Record<string, string> = {
-  saved: "text-emerald-400",
+  saved: "text-emerald-400/80",
   saving: "text-zinc-400 animate-pulse",
-  unsaved: "text-amber-400",
-  error: "text-red-400",
+  unsaved: "text-amber-400/80",
+  error: "text-red-400/80",
 };
 
 export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
@@ -50,46 +52,56 @@ export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
 
   return (
     <>
-      <div className="flex items-center gap-3 px-4 py-2 border-b border-zinc-800 bg-zinc-950 h-12 shrink-0">
-        <span className="text-sm font-semibold text-zinc-200 truncate max-w-[200px]">
-          {projectTitle}
-        </span>
-
-        <span className={`text-xs ml-1 ${saveStatusColor[saveStatus] ?? "text-zinc-400"}`}>
-          {saveStatusLabel[saveStatus]}
-        </span>
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md h-14 shrink-0 z-50">
+        <div className="flex items-center gap-2 pr-4 border-r border-white/10 mr-2">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon-sm" className="hover:bg-white/5 text-zinc-400 hover:text-zinc-100" title="Back to Dashboard">
+              <ChevronLeft size={18} />
+            </Button>
+          </Link>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-zinc-100 truncate max-w-[200px] leading-tight">
+              {projectTitle}
+            </span>
+            <span className={`text-[10px] font-medium tracking-wide uppercase ${saveStatusColor[saveStatus] ?? "text-zinc-500"}`}>
+              {saveStatusLabel[saveStatus]}
+            </span>
+          </div>
+        </div>
 
         <div className="flex-1" />
 
-        <Button
-          variant="ghost"
-          size="sm"
-          title="Import graph"
-          onClick={() => setImportOpen(true)}
-          className="gap-1.5 text-xs"
-        >
-          <Upload size={14} />
-          Import
-        </Button>
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/5">
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Import graph"
+            onClick={() => setImportOpen(true)}
+            className="gap-1.5 text-xs h-8 text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+          >
+            <Upload size={14} />
+            Import
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Export JSON"
+            onClick={exportJson}
+            disabled={!graph}
+            className="gap-1.5 text-xs h-8 text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+          >
+            <Download size={14} />
+            Export
+          </Button>
+        </div>
 
         <Button
-          variant="ghost"
-          size="sm"
-          title="Export JSON"
-          onClick={exportJson}
-          disabled={!graph}
-          className="gap-1.5 text-xs"
-        >
-          <Download size={14} />
-          Export
-        </Button>
-
-        <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           title="Share project"
           onClick={() => setShareOpen(true)}
-          className="gap-1.5 text-xs"
+          className="gap-1.5 text-xs h-8 border-indigo-500/20 bg-indigo-500/5 hover:border-indigo-500/50 hover:bg-indigo-500/10 text-indigo-300"
         >
           <Share2 size={14} />
           Share

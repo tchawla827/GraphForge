@@ -61,6 +61,9 @@
   --color-text-primary: var(--gf-text-primary);
   --color-text-secondary: var(--gf-text-secondary);
   --color-text-muted: var(--gf-text-muted);
+
+  --background-image-grid: linear-gradient(to right, var(--gf-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--gf-grid-line) 1px, transparent 1px);
 }
 
 /* Light fallback (app always uses dark, but keep sensible defaults) */
@@ -107,51 +110,53 @@
   --gf-text-primary: #111111;
   --gf-text-secondary: #444444;
   --gf-text-muted: #888888;
+  --gf-grid-line: rgba(0, 0, 0, 0.05);
 }
 
 /* GraphForge dark theme — premium dark engineering dashboard */
 .dark {
-  --background: #0a0a0a;
-  --foreground: #f0f0f0;
-  --card: #111111;
-  --card-foreground: #f0f0f0;
-  --popover: #111111;
-  --popover-foreground: #f0f0f0;
+  --background: #030303;
+  --foreground: #f8fafc;
+  --card: #0a0a0a;
+  --card-foreground: #f8fafc;
+  --popover: #0a0a0a;
+  --popover-foreground: #f8fafc;
   --primary: #6366f1;
   --primary-foreground: #ffffff;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #d4d4d4;
-  --muted: #1a1a1a;
-  --muted-foreground: #888888;
+  --secondary: #0f172a;
+  --secondary-foreground: #e2e8f0;
+  --muted: #0f172a;
+  --muted-foreground: #94a3b8;
   --accent: #6366f1;
   --accent-foreground: #ffffff;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: #222222;
-  --input: #1a1a1a;
+  --border: #1e293b;
+  --input: #0f172a;
   --ring: #6366f1;
   --chart-1: #6366f1;
   --chart-2: #818cf8;
   --chart-3: #4f46e5;
   --chart-4: #a5b4fc;
   --chart-5: #312e81;
-  --sidebar: #0d0d0d;
-  --sidebar-foreground: #d4d4d4;
+  --sidebar: #050505;
+  --sidebar-foreground: #e2e8f0;
   --sidebar-primary: #6366f1;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #d4d4d4;
-  --sidebar-border: #222222;
+  --sidebar-accent: #0f172a;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #1e293b;
   --sidebar-ring: #6366f1;
 
   /* GraphForge surface tokens */
-  --gf-surface: #0a0a0a;
-  --gf-card: #111111;
-  --gf-border: #222222;
+  --gf-surface: #030303;
+  --gf-card: rgba(10, 10, 10, 0.7);
+  --gf-border: rgba(30, 41, 59, 0.5);
   --gf-accent: #6366f1;
   --gf-accent-foreground: #ffffff;
-  --gf-text-primary: #f0f0f0;
-  --gf-text-secondary: #d4d4d4;
-  --gf-text-muted: #888888;
+  --gf-text-primary: #f8fafc;
+  --gf-text-secondary: #cbd5e1;
+  --gf-text-muted: #64748b;
+  --gf-grid-line: rgba(99, 102, 241, 0.04);
 }
 
 @layer base {
@@ -160,8 +165,38 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: var(--background-image-grid);
+    background-size: 40px 40px;
+    background-attachment: fixed;
   }
   html {
-    @apply font-sans;
+    @apply font-sans antialiased;
   }
 }
+
+@layer utilities {
+  .glass {
+    @apply bg-card/70 backdrop-blur-md border border-border/50 shadow-xl;
+  }
+  .glass-darker {
+    @apply bg-black/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+  .glow-primary {
+    @apply shadow-[0_0_20px_rgba(99,102,241,0.3)];
+  }
+  .glow-border {
+    @apply border-primary/50 shadow-[0_0_10px_rgba(99,102,241,0.2)];
+  }
+
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-gradient {
+    animation: gradient 6s ease infinite;
+  }
+}
+
+

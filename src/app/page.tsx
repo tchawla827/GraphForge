@@ -43,34 +43,36 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-[#030303] text-foreground selection:bg-primary/30">
       <Navbar />
 
-      {/* Hero */}
-      <section className="flex-1 flex flex-col items-center justify-center px-4 text-center py-24">
-        <div className="max-w-2xl space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground bg-muted/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
-            Graph algorithm workspace
+      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center py-32 relative overflow-hidden">
+        {/* Background ambient glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+        
+        <div className="max-w-3xl space-y-8 relative">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 text-[10px] font-bold uppercase tracking-[0.2em] text-primary bg-primary/5 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            Next-Gen Graph Algorithm Workspace
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Build graphs.
+          <h1 className="text-5xl font-black tracking-tight sm:text-7xl lg:text-8xl animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
+            Design <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-400 to-primary-foreground bg-[length:200%_auto] animate-gradient">Visual</span>
             <br />
-            <span className="text-primary">Run algorithms.</span>
+            Architectures.
           </h1>
 
-          <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            GraphForge is a professional workspace for constructing custom graphs,
-            stepping through algorithms visually, and sharing interactive snapshots.
+          <p className="text-lg text-zinc-400 max-w-xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+            GraphForge is a professional environment for constructing complex graphs, 
+            debugging algorithms step-by-step, and sharing interactive engineering snapshots.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
             <Link
               href="/demo/dijkstra"
-              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto")}
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto h-12 px-8 font-bold border-white/10 hover:border-primary/50")}
             >
-              Try Demo
+              Interactive Demo
             </Link>
             <form
               action={async () => {
@@ -78,28 +80,39 @@ export default async function LandingPage() {
                 await signIn("google", { redirectTo: "/dashboard" });
               }}
             >
-              <Button size="lg" type="submit" className="w-full sm:w-auto">
-                Sign in with Google
+              <Button size="lg" type="submit" className="w-full sm:w-auto h-12 px-8 font-black tracking-wide">
+                Start Building Free
               </Button>
             </form>
           </div>
         </div>
-      </section>
+      </main>
 
       {/* Features */}
-      <section className="border-t border-border py-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-xl font-semibold text-zinc-200 text-center mb-10">
-            Everything you need to explore algorithms
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section className="border-t border-white/5 py-32 px-6 bg-black/20 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-20 space-y-4">
+            <h2 className="text-3xl font-bold tracking-tight text-zinc-100 sm:text-4xl">
+              Engineered for Algorithm Mastery
+            </h2>
+            <p className="text-zinc-500 max-w-2xl mx-auto">
+              A complete toolset for developers, students, and researchers to explore graph theory visually.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {FEATURES.map(({ title, description }) => (
               <div
                 key={title}
-                className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-6 py-5 space-y-2"
+                className="group rounded-2xl border border-white/5 bg-zinc-900/30 p-8 space-y-4 hover:border-primary/30 transition-all duration-500 relative overflow-hidden"
               >
-                <h3 className="text-zinc-100 font-semibold text-sm">{title}</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">{description}</p>
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <h3 className="text-lg font-bold text-zinc-100 group-hover:text-primary transition-colors">
+                  {title}
+                </h3>
+                <p className="text-sm text-zinc-500 leading-relaxed group-hover:text-zinc-400 transition-colors">
+                  {description}
+                </p>
               </div>
             ))}
           </div>
@@ -107,14 +120,14 @@ export default async function LandingPage() {
       </section>
 
       {/* Algorithm list */}
-      <section className="border-t border-border py-16 px-4">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-          <h2 className="text-xl font-semibold text-zinc-200">9 algorithms included</h2>
-          <div className="flex flex-wrap gap-2 justify-center">
+      <section className="border-t border-white/5 py-32 px-6">
+        <div className="max-w-3xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl font-bold tracking-tight text-zinc-100">9 Core Algorithms</h2>
+          <div className="flex flex-wrap gap-3 justify-center">
             {ALGORITHM_NAMES.map((name) => (
               <span
                 key={name}
-                className="px-3 py-1.5 rounded-full border border-zinc-700 bg-zinc-900 text-zinc-300 text-xs font-medium"
+                className="px-4 py-2 rounded-xl border border-white/5 bg-zinc-900/50 text-zinc-300 text-xs font-bold uppercase tracking-wider hover:border-primary/30 transition-colors"
               >
                 {name}
               </span>
@@ -123,21 +136,23 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-border py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h2 className="text-xl font-semibold text-zinc-200">Public sample demos</h2>
-          <p className="text-sm text-zinc-500">
-            Open a read-only sample workspace instantly. No account required.
-          </p>
-          <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
+      <section className="border-t border-white/5 py-32 px-6 bg-zinc-950/30">
+        <div className="max-w-5xl mx-auto text-center space-y-12">
+          <div className="space-y-4">
+            <h2 className="text-3xl font-bold tracking-tight text-zinc-100">Public Sample Demos</h2>
+            <p className="text-zinc-500 max-w-lg mx-auto">
+              Jump straight into a workspace with pre-built scenarios. No authentication required.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 text-left sm:grid-cols-3">
             {ALL_SAMPLES.slice(0, 3).map((sample) => (
               <Link
                 key={sample.key}
                 href={`/demo/${sample.key}`}
-                className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4 transition-colors hover:bg-zinc-900"
+                className="group rounded-2xl border border-white/5 bg-zinc-900/40 p-6 transition-all duration-300 hover:border-primary/50 hover:bg-zinc-900/60 hover:-translate-y-1"
               >
-                <p className="text-sm font-semibold text-zinc-100">{sample.label}</p>
-                <p className="mt-1 text-xs leading-relaxed text-zinc-500">{sample.description}</p>
+                <p className="text-sm font-bold text-zinc-100 group-hover:text-primary transition-colors">{sample.label}</p>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-500 group-hover:text-zinc-400 transition-colors">{sample.description}</p>
               </Link>
             ))}
           </div>
@@ -145,9 +160,10 @@ export default async function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-6 px-4 text-center text-xs text-zinc-600">
-        GraphForge — built for engineers who think in graphs
+      <footer className="border-t border-white/5 py-12 px-6 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+        GraphForge &copy; 2026 &mdash; Built for engineers who think in graphs
       </footer>
     </div>
   );
 }
+

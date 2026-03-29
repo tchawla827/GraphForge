@@ -123,9 +123,9 @@ export function PlaybackPanel() {
 
   if (runStatus === "idle") {
     return (
-      <div className="flex h-12 shrink-0 items-center justify-center border-t border-zinc-800 bg-zinc-950 px-4">
-        <span className="text-xs text-zinc-600">
-          Run an algorithm to see playback controls
+      <div className="flex h-12 shrink-0 items-center justify-center border-t border-white/5 bg-zinc-950/50 backdrop-blur-md px-4">
+        <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-600">
+          Ready for algorithm execution
         </span>
       </div>
     );
@@ -133,9 +133,9 @@ export function PlaybackPanel() {
 
   if (runStatus === "invalidated") {
     return (
-      <div className="flex h-12 shrink-0 items-center justify-center gap-2 border-t border-zinc-800 bg-zinc-950 px-4">
-        <span className="text-xs text-amber-400">
-          Graph changed - run invalidated
+      <div className="flex h-12 shrink-0 items-center justify-center gap-2 border-t border-white/5 bg-zinc-950/50 backdrop-blur-md px-4">
+        <span className="text-[10px] uppercase font-bold tracking-widest text-amber-500/80">
+          Graph changed — run invalidated
         </span>
       </div>
     );
@@ -147,7 +147,7 @@ export function PlaybackPanel() {
 
   return (
     <div
-      className="flex shrink-0 flex-col border-t border-zinc-800 bg-zinc-950"
+      className="flex shrink-0 flex-col border-t border-white/5 bg-zinc-950/50 backdrop-blur-md z-20 shadow-2xl"
       data-testid="playback-panel"
       style={{ height: playbackPanelHeight }}
     >
@@ -155,26 +155,27 @@ export function PlaybackPanel() {
         role="separator"
         aria-orientation="horizontal"
         aria-label="Resize playback panel"
-        className={`flex h-3 shrink-0 cursor-row-resize items-center justify-center bg-zinc-950 ${
-          isResizing ? "text-indigo-300" : "text-zinc-600 hover:text-zinc-400"
+        className={`flex h-3 shrink-0 cursor-row-resize items-center justify-center transition-colors ${
+          isResizing ? "bg-primary/20 text-primary" : "bg-transparent text-zinc-800 hover:text-zinc-600"
         }`}
         onPointerDown={handleResizeStart}
         onDoubleClick={handleResetHeight}
         title="Drag to resize. Double-click to reset height."
       >
-        <div className="h-1 w-14 rounded-full bg-current/70" />
+        <div className="h-1 w-12 rounded-full bg-current" />
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 px-3 py-1.5">
-        <div className="flex items-center gap-0.5">
+      <div className="flex shrink-0 items-center gap-4 px-4 py-2 border-b border-white/5">
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
           <Button
             variant="ghost"
             size="icon-xs"
             onClick={restart}
             title="Restart"
             aria-label="Restart playback"
+            className="hover:bg-white/10"
           >
-            <RotateCcw size={12} />
+            <RotateCcw size={14} />
           </Button>
 
           <Button
@@ -184,20 +185,21 @@ export function PlaybackPanel() {
             disabled={atStart}
             title="Step back"
             aria-label="Step backward"
+            className="hover:bg-white/10"
           >
-            <SkipBack size={12} />
+            <SkipBack size={14} />
           </Button>
 
           <Button
             variant="ghost"
-            size="icon-xs"
+            size="icon-sm"
             onClick={isPlaying ? pause : play}
             disabled={atEnd && !isPlaying}
             title={isPlaying ? "Pause" : "Play"}
             aria-label={isPlaying ? "Pause playback" : "Play"}
-            className="text-indigo-400"
+            className="text-primary hover:bg-primary/10 hover:text-primary transition-all active:scale-95"
           >
-            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+            {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
           </Button>
 
           <Button
@@ -207,20 +209,21 @@ export function PlaybackPanel() {
             disabled={atEnd}
             title="Step forward"
             aria-label="Step forward"
+            className="hover:bg-white/10"
           >
-            <SkipForward size={12} />
+            <SkipForward size={14} />
           </Button>
         </div>
 
-        <div className="ml-1 flex items-center gap-0.5">
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/5">
           {SPEED_OPTIONS.map((option) => (
             <button
               key={option}
               onClick={() => setSpeed(option)}
-              className={`rounded px-1 py-0.5 text-[10px] ${
+              className={`rounded-md px-2 py-1 text-[10px] font-bold transition-all ${
                 speed === option
-                  ? "bg-indigo-600 text-white"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                  : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
               }`}
               aria-label={`Speed ${option}x`}
             >
@@ -229,18 +232,24 @@ export function PlaybackPanel() {
           ))}
         </div>
 
-        <span
-          className="ml-2 text-[10px] tabular-nums text-zinc-500"
-          data-testid="step-counter"
-        >
-          {Math.max(0, currentStep + 1)}/{totalSteps}
-        </span>
+        <div className="flex items-center gap-2 min-w-[60px]">
+          <span
+            className="text-[11px] font-mono font-bold text-primary tabular-nums"
+            data-testid="step-counter"
+          >
+            {String(Math.max(0, currentStep + 1)).padStart(2, '0')}
+          </span>
+          <span className="text-[10px] text-zinc-600 font-bold">/</span>
+          <span className="text-[11px] font-mono text-zinc-500 tabular-nums">
+            {String(totalSteps).padStart(2, '0')}
+          </span>
+        </div>
 
-        <div className="mx-2 flex-1">
+        <div className="flex-1 max-w-md">
           <TimelineScrubber />
         </div>
 
-        <div className="max-w-[280px] overflow-hidden">
+        <div className="flex-1 min-w-0 max-w-[400px]">
           <StepDescription />
         </div>
       </div>

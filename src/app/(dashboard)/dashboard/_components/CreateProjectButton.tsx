@@ -33,10 +33,11 @@ export function CreateProjectButton() {
     <Button
       onClick={handleCreate}
       disabled={loading}
-      className="gap-2 bg-indigo-600 hover:bg-indigo-500 text-white"
+      className="gap-2 bg-primary hover:bg-primary/90 text-white font-bold h-10 px-6 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5 active:translate-y-0"
     >
-      <Plus size={16} />
-      {loading ? "Creating..." : "New project"}
+      <Plus size={18} strokeWidth={3} />
+      {loading ? "Initializing..." : "Create Project"}
     </Button>
   );
 }
+

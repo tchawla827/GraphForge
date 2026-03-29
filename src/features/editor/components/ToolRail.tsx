@@ -15,7 +15,7 @@ export function ToolRail() {
   const { toolMode, setToolMode } = useUiStore();
 
   return (
-    <div className="flex flex-col gap-1 p-2 border-r border-zinc-800 bg-zinc-950">
+    <div className="flex flex-col gap-2 p-2 border-r border-white/5 bg-zinc-950/50 backdrop-blur-md z-10">
       {tools.map(({ mode, icon: Icon, label }) => (
         <button
           key={mode}
@@ -24,15 +24,19 @@ export function ToolRail() {
           aria-label={label}
           aria-pressed={toolMode === mode}
           className={cn(
-            "flex items-center justify-center w-9 h-9 rounded-md transition-colors",
+            "flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 relative group",
             toolMode === mode
-              ? "bg-indigo-600 text-white"
-              : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+              : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
           )}
         >
-          <Icon size={16} />
+          <Icon size={18} />
+          {toolMode === mode && (
+            <div className="absolute inset-0 rounded-xl blur-md bg-primary/20 -z-10" />
+          )}
         </button>
       ))}
     </div>
   );
 }
+

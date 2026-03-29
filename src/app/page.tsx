@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { signIn } from "@/lib/auth/config";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button.variants";
 import { Navbar } from "@/components/layout/navbar";
 import { ALL_SAMPLES } from "@/lib/samples";
 import { cn } from "@/lib/utils";

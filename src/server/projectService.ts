@@ -64,7 +64,7 @@ export async function listProjects(
   });
 
   return projects.map((p) => {
-    const graph = p.graphs[0];
+    const graph = p.graphs;
     return {
       ...p,
       nodeCount: graph?._count.nodes ?? 0,
@@ -159,7 +159,7 @@ export async function duplicateProject(
     return { ok: false, error: "forbidden" };
   }
 
-  const sourceGraph = project.graphs[0];
+  const sourceGraph = project.graphs;
 
   const duplicatedProject = await prisma.$transaction(async (tx) => {
     const createdProject = await tx.project.create({
@@ -186,7 +186,10 @@ export async function duplicateProject(
       return createdProject;
     }
 
-    const targetGraph = createdProject.graphs[0];
+    const targetGraph = createdProject.graphs;
+    if (!targetGraph) {
+      return createdProject;
+    }
     const nodeIdMap = new Map<string, string>();
 
     if (sourceGraph.nodes.length > 0) {

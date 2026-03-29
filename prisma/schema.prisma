@@ -76,16 +76,16 @@ model Project {
   updatedAt         DateTime  @updatedAt
   archivedAt        DateTime?
 
-  owner        User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  graphs       GraphRecord[]
-  shareLinks   ShareLink[]
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  graphs        GraphRecord?
+  shareLinks    ShareLink[]
   algorithmRuns AlgorithmRun[]
   importRecords ImportRecord[]
 }
 
 model GraphRecord {
   id                 String   @id @default(cuid())
-  projectId          String
+  projectId          String   @unique
   schemaVersion      Int      @default(1)
   isDirected         Boolean  @default(false)
   isWeighted         Boolean  @default(false)
@@ -97,8 +97,6 @@ model GraphRecord {
   project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   nodes   NodeRecord[]
   edges   EdgeRecord[]
-
-  @@unique([projectId]) // one graph per project in MVP
 }
 
 model NodeRecord {

@@ -116,6 +116,8 @@ export function toReactFlow(
     id: n.id,
     type: "graphNode",
     position: { x: n.position.x, y: n.position.y },
+    width: NODE_SIZE,
+    height: NODE_SIZE,
     selected: selectedNodeIds.has(n.id),
     data: {
       label: n.label,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Upload, Share2, Play, ChevronLeft } from "lucide-react";
+import { Upload, Share2, Play, ChevronLeft } from "lucide-react";
 
 import Link from "next/link";
 import { useUiStore } from "@/features/editor/store/uiStore";
@@ -10,6 +10,7 @@ import { usePlaybackStore } from "@/features/editor/store/playbackStore";
 import { Button } from "@/components/ui/button";
 import { ImportModal } from "./ImportModal";
 import { ShareModal } from "@/features/share/ShareModal";
+import { ExportMenu } from "./ExportMenu";
 
 interface ToolbarProps {
   projectTitle: string;
@@ -36,19 +37,6 @@ export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
   const runStatus = usePlaybackStore((s) => s.runStatus);
   const [importOpen, setImportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-
-  function exportJson() {
-    if (!graph) return;
-    const blob = new Blob([JSON.stringify(graph, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${projectTitle.replace(/\s+/g, "_")}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   return (
     <>
@@ -83,17 +71,7 @@ export function Toolbar({ projectTitle, projectId }: ToolbarProps) {
             Import
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            title="Export JSON"
-            onClick={exportJson}
-            disabled={!graph}
-            className="gap-1.5 text-xs h-8 text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
-          >
-            <Download size={14} />
-            Export
-          </Button>
+          <ExportMenu projectTitle={projectTitle} />
         </div>
 
         <Button

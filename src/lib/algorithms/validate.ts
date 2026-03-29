@@ -55,15 +55,18 @@ export function validateAlgorithmInput(
     return { ok: false, error: "The selected target node does not exist in the graph." };
   }
 
-  // Dijkstra: no negative weights
-  if (algorithm === "dijkstra") {
+  // Dijkstra / A*: no negative weights
+  if (algorithm === "dijkstra" || algorithm === "astar") {
     const hasNegative = graph.edges.some(
       (e) => e.weight != null && e.weight < 0
     );
     if (hasNegative) {
       return {
         ok: false,
-        error: "Dijkstra's algorithm does not support negative edge weights. Use Bellman-Ford instead.",
+        error:
+          algorithm === "dijkstra"
+            ? "Dijkstra's algorithm does not support negative edge weights. Use Bellman-Ford instead."
+            : "A* does not support negative edge weights. Use Bellman-Ford instead.",
       };
     }
   }

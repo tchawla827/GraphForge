@@ -140,6 +140,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
       },
       isDirty: true,
     });
+    usePlaybackStore.getState().invalidateRun();
   },
 
   updateEdge(edgeId, patch) {
@@ -154,6 +155,7 @@ export const useGraphStore = create<GraphState & GraphActions>((set, get) => ({
       },
       isDirty: true,
     });
+    usePlaybackStore.getState().invalidateRun();
   },
 
   reconnectEdge(edgeId, newSource, newTarget, metadata) {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { astar } from "../../../src/lib/algorithms/astar";
 import { validateAlgorithmInput } from "../../../src/lib/algorithms/validate";
-import { buildGraph } from "./helpers";
+import { buildGraph, negativeEdgeGraph } from "./helpers";
 
 describe("A*", () => {
   it("finds correct path on a 4-node grid graph with euclidean heuristic", () => {
@@ -59,6 +59,21 @@ describe("A*", () => {
     });
 
     expect(result.ok).toBe(false);
+  });
+
+  it("validation rejects negative edge weights", () => {
+    const graph = negativeEdgeGraph();
+    const result = validateAlgorithmInput(graph, {
+      algorithm: "astar",
+      sourceNodeId: "A",
+      targetNodeId: "C",
+      heuristic: "euclidean",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("negative");
+    }
   });
 
   it("handles unreachable target", () => {

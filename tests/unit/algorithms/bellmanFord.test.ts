@@ -53,10 +53,12 @@ describe("Bellman-Ford", () => {
     const graph = disconnectedGraph();
     const output = bellmanFord({ graph, config: { algorithm: "bellman_ford", sourceNodeId: "A" } });
 
+    expect(output.result.status).toBe("warning");
     const distances = output.result.output.distances as Record<string, number>;
     expect(distances["A"]).toBe(0);
     expect(distances["B"]).toBe(1);
     expect(distances["C"]).toBeUndefined();
+    expect(output.result.output.unreachableNodeIds).toEqual(["C"]);
   });
 
   it("reconstructs path to target when specified", () => {
@@ -67,5 +69,18 @@ describe("Bellman-Ford", () => {
     });
 
     expect(output.result.output.path).toEqual(["A", "B", "C", "D", "E"]);
+    expect(output.result.output.pathEdgeIds).toEqual(["e1", "e3", "e5", "e6"]);
+  });
+
+  it("returns warning when target is unreachable", () => {
+    const graph = disconnectedGraph();
+    const output = bellmanFord({
+      graph,
+      config: { algorithm: "bellman_ford", sourceNodeId: "A", targetNodeId: "C" },
+    });
+
+    expect(output.result.status).toBe("warning");
+    expect(output.result.output.path).toBeUndefined();
+    expect(output.result.warnings.some((warning) => warning.includes("Target C is unreachable"))).toBe(true);
   });
 });

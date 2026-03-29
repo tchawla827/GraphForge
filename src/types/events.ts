@@ -34,7 +34,7 @@ export type PlaybackEventType =
  * - `STACK_UPDATED`: `{ items: string[], displayItems?: string[] }`
  * - `PRIORITY_QUEUE_UPDATED`: `{ items: string[], displayItems?: string[] }`
  * - `DISTANCE_UPDATED`: `{ nodeId: string, distance: number }`
- * - `PATH_UPDATED`: `{ path: string[] }`
+ * - `PATH_UPDATED`: `{ path: string[], edgeIds?: string[] }`
  * - `CYCLE_DETECTED`: `{ cycle: string[] }`
  * - `RUN_WARNING`: `{ message: string }`
  * - `RUN_COMPLETED`: `{}`

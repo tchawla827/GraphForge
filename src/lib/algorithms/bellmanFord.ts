@@ -9,9 +9,8 @@ export const bellmanFord: AlgorithmFn = ({ graph, config }) => {
   const source = config.sourceNodeId!;
   const target = config.targetNodeId ?? null;
   const directed = graph.config.directed;
-  const V = graph.nodes.length;
+  const vertexCount = graph.nodes.length;
 
-  // Build edge list
   const edgeList: { edgeId: string; from: string; to: string; weight: number }[] = [];
   for (const edge of graph.edges) {
     const w = edge.weight ?? 1;
@@ -22,23 +21,26 @@ export const bellmanFord: AlgorithmFn = ({ graph, config }) => {
   }
 
   const dist: Record<string, number> = {};
-  const parent: Record<string, string | null> = {};
+  const parentNode: Record<string, string | null> = {};
+  const parentEdge: Record<string, string | null> = {};
 
   for (const node of graph.nodes) {
     dist[node.id] = Infinity;
-    parent[node.id] = null;
+    parentNode[node.id] = null;
+    parentEdge[node.id] = null;
   }
   dist[source] = 0;
 
-  events.push(eb.emit("DISTANCE_UPDATED", { nodeId: source, distance: 0 }, `Distance to ${findLabel(source)} = 0`));
+  events.push(
+    eb.emit("DISTANCE_UPDATED", { nodeId: source, distance: 0 }, `Distance to ${findLabel(source)} = 0`)
+  );
   events.push(eb.emit("NODE_VISITED", { nodeId: source }, `Source node ${findLabel(source)} initialized`));
 
   let visitedCount = 1;
   let edgesConsidered = 0;
   const warnings: string[] = [];
 
-  // Relax all edges V-1 times
-  for (let i = 0; i < V - 1; i++) {
+  for (let iteration = 0; iteration < vertexCount - 1; iteration++) {
     let relaxed = false;
 
     for (const { edgeId, from, to, weight } of edgeList) {
@@ -46,15 +48,19 @@ export const bellmanFord: AlgorithmFn = ({ graph, config }) => {
 
       edgesConsidered++;
       events.push(
-        eb.emit("EDGE_CONSIDERED", { edgeId, from, to },
-          `Iteration ${i + 1}: considering ${findLabel(from)} → ${findLabel(to)} (weight: ${weight})`)
+        eb.emit(
+          "EDGE_CONSIDERED",
+          { edgeId, from, to },
+          `Iteration ${iteration + 1}: considering ${findLabel(from)} -> ${findLabel(to)} (weight: ${weight})`
+        )
       );
 
       const newDist = dist[from] + weight;
       if (newDist < dist[to]) {
         const isFirstVisit = dist[to] === Infinity;
         dist[to] = newDist;
-        parent[to] = from;
+        parentNode[to] = from;
+        parentEdge[to] = edgeId;
         relaxed = true;
 
         if (isFirstVisit) {
@@ -63,17 +69,26 @@ export const bellmanFord: AlgorithmFn = ({ graph, config }) => {
         }
 
         events.push(
-          eb.emit("EDGE_RELAXED", { edgeId, newDistance: newDist, via: from },
-            `Relaxed: distance to ${findLabel(to)} = ${newDist} via ${findLabel(from)}`)
+          eb.emit(
+            "EDGE_RELAXED",
+            { edgeId, newDistance: newDist, via: from },
+            `Relaxed: distance to ${findLabel(to)} = ${newDist} via ${findLabel(from)}`
+          )
         );
         events.push(
-          eb.emit("DISTANCE_UPDATED", { nodeId: to, distance: newDist },
-            `Distance to ${findLabel(to)} = ${newDist}`)
+          eb.emit(
+            "DISTANCE_UPDATED",
+            { nodeId: to, distance: newDist },
+            `Distance to ${findLabel(to)} = ${newDist}`
+          )
         );
       } else {
         events.push(
-          eb.emit("EDGE_REJECTED", { edgeId, reason: "no improvement" },
-            `No improvement for ${findLabel(from)} → ${findLabel(to)}`)
+          eb.emit(
+            "EDGE_REJECTED",
+            { edgeId, reason: "no improvement" },
+            `No improvement for ${findLabel(from)} -> ${findLabel(to)}`
+          )
         );
       }
     }
@@ -81,57 +96,80 @@ export const bellmanFord: AlgorithmFn = ({ graph, config }) => {
     if (!relaxed) break;
   }
 
-  // V-th iteration: detect negative cycles
   let hasNegativeCycle = false;
   for (const { from, to, weight } of edgeList) {
     if (dist[from] === Infinity) continue;
     if (dist[from] + weight < dist[to]) {
       hasNegativeCycle = true;
 
-      // Trace the cycle
-      const cycle = traceCycle(from, parent);
+      const cycle = traceCycle(from, parentNode);
+      const warning = "Graph contains a negative weight cycle. Shortest paths are not well-defined.";
       events.push(
-        eb.emit("CYCLE_DETECTED", { cycle },
-          `Negative cycle detected: ${cycle.map(findLabel).join(" → ")}`)
+        eb.emit("CYCLE_DETECTED", { cycle }, `Negative cycle detected: ${cycle.map(findLabel).join(" -> ")}`)
       );
-      events.push(
-        eb.emit("RUN_WARNING", { message: "Graph contains a negative weight cycle. Shortest paths are not well-defined." },
-          "Negative weight cycle detected")
-      );
-      warnings.push("Graph contains a negative weight cycle. Shortest paths are not well-defined.");
+      events.push(eb.emit("RUN_WARNING", { message: warning }, "Negative weight cycle detected"));
+      warnings.push(warning);
       break;
     }
   }
 
-  // Path reconstruction if target specified and no negative cycle
   let path: string[] | undefined;
+  let pathEdgeIds: string[] | undefined;
   if (target && !hasNegativeCycle) {
-    const result = reconstructPath(parent, source, target, eb);
+    const result = reconstructPath(parentNode, parentEdge, source, target, eb);
     if (result) {
       events.push(result.event);
       path = result.path;
+      pathEdgeIds = result.edgeIds;
     }
   }
 
-  // Finalize reachable nodes
   for (const node of graph.nodes) {
     if (dist[node.id] !== Infinity) {
-      events.push(eb.emit("NODE_FINALIZED", { nodeId: node.id }, `Finalized ${findLabel(node.id)} with distance ${dist[node.id]}`));
+      events.push(
+        eb.emit(
+          "NODE_FINALIZED",
+          { nodeId: node.id },
+          `Finalized ${findLabel(node.id)} with distance ${dist[node.id]}`
+        )
+      );
+    }
+  }
+
+  const distances: Record<string, number> = {};
+  for (const [nodeId, distance] of Object.entries(dist)) {
+    if (distance !== Infinity) {
+      distances[nodeId] = distance;
+    }
+  }
+
+  const unreachableNodeIds = graph.nodes
+    .map((node) => node.id)
+    .filter((nodeId) => dist[nodeId] === Infinity);
+
+  if (target && !hasNegativeCycle && dist[target] === Infinity) {
+    warnings.push(`Target ${findLabel(target)} is unreachable from ${findLabel(source)}.`);
+  }
+
+  if (unreachableNodeIds.length > 0) {
+    warnings.push(
+      `Graph is disconnected from ${findLabel(source)}; ${unreachableNodeIds.length} node${unreachableNodeIds.length !== 1 ? "s are" : " is"} unreachable.`
+    );
+  }
+
+  for (const warning of warnings) {
+    if (warning.includes("unreachable")) {
+      events.push(eb.emit("RUN_WARNING", { message: warning }, warning));
     }
   }
 
   events.push(eb.emit("RUN_COMPLETED", {}, "Bellman-Ford complete"));
 
-  const distances: Record<string, number> = {};
-  for (const [nodeId, d] of Object.entries(dist)) {
-    if (d !== Infinity) distances[nodeId] = d;
-  }
-
   return {
     events,
     result: {
       algorithm: "bellman_ford",
-      status: hasNegativeCycle ? "warning" : "success",
+      status: hasNegativeCycle || warnings.length > 0 ? "warning" : "success",
       summary: hasNegativeCycle
         ? "Negative weight cycle detected. Shortest paths are unreliable."
         : target
@@ -144,7 +182,12 @@ export const bellmanFord: AlgorithmFn = ({ graph, config }) => {
         consideredEdgeCount: edgesConsidered,
         stepCount: events.length,
       },
-      output: { distances, ...(path ? { path } : {}), hasNegativeCycle },
+      output: {
+        distances,
+        unreachableNodeIds,
+        ...(path ? { path, pathEdgeIds } : {}),
+        hasNegativeCycle,
+      },
       warnings,
     },
   };

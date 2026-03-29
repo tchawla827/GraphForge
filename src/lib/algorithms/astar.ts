@@ -15,7 +15,9 @@ const heuristics: Record<string, HeuristicFn> = {
 
 export const astar: AlgorithmFn = ({ graph, config }) => {
   const eb = new EventBuilder();
-  const events = [eb.emit("RUN_STARTED", {}, `Starting A* from ${config.sourceNodeId} to ${config.targetNodeId}`)];
+  const events = [
+    eb.emit("RUN_STARTED", {}, `Starting A* from ${config.sourceNodeId} to ${config.targetNodeId}`),
+  ];
 
   const source = config.sourceNodeId!;
   const target = config.targetNodeId!;
@@ -26,7 +28,6 @@ export const astar: AlgorithmFn = ({ graph, config }) => {
   const nodeMap = new Map(graph.nodes.map((n) => [n.id, n]));
   const targetNode = nodeMap.get(target)!;
 
-  // Build adjacency list
   const adj = new Map<string, { nodeId: string; edgeId: string; weight: number }[]>();
   for (const node of graph.nodes) {
     adj.set(node.id, []);
@@ -41,21 +42,24 @@ export const astar: AlgorithmFn = ({ graph, config }) => {
 
   const gScore: Record<string, number> = {};
   const fScore: Record<string, number> = {};
-  const parent: Record<string, string | null> = {};
+  const parentNode: Record<string, string | null> = {};
+  const parentEdge: Record<string, string | null> = {};
   const finalized = new Set<string>();
 
   for (const node of graph.nodes) {
     gScore[node.id] = Infinity;
     fScore[node.id] = Infinity;
-    parent[node.id] = null;
+    parentNode[node.id] = null;
+    parentEdge[node.id] = null;
   }
 
   gScore[source] = 0;
   fScore[source] = h(nodeMap.get(source)!, targetNode);
 
-  events.push(eb.emit("DISTANCE_UPDATED", { nodeId: source, distance: 0 }, `g(${findLabel(source)}) = 0`));
+  events.push(
+    eb.emit("DISTANCE_UPDATED", { nodeId: source, distance: 0 }, `g(${findLabel(source)}) = 0`)
+  );
 
-  // Open set as array-based priority queue on fScore
   const openSet: string[] = [source];
   let visitedCount = 0;
   let edgesConsidered = 0;
@@ -64,7 +68,6 @@ export const astar: AlgorithmFn = ({ graph, config }) => {
   events.push(eb.emit("PRIORITY_QUEUE_UPDATED", { items: [source] }, `Open set: [${findLabel(source)}]`));
 
   while (openSet.length > 0) {
-    // Find node with lowest fScore
     let minIdx = 0;
     for (let i = 1; i < openSet.length; i++) {
       if (fScore[openSet[i]] < fScore[openSet[minIdx]]) minIdx = i;
@@ -75,7 +78,13 @@ export const astar: AlgorithmFn = ({ graph, config }) => {
     finalized.add(current);
     visitedCount++;
 
-    events.push(eb.emit("NODE_VISITED", { nodeId: current }, `Visiting node ${findLabel(current)} (g=${gScore[current].toFixed(1)}, f=${fScore[current].toFixed(1)})`));
+    events.push(
+      eb.emit(
+        "NODE_VISITED",
+        { nodeId: current },
+        `Visiting node ${findLabel(current)} (g=${gScore[current].toFixed(1)}, f=${fScore[current].toFixed(1)})`
+      )
+    );
     events.push(eb.emit("NODE_FINALIZED", { nodeId: current }, `Finalized node ${findLabel(current)}`));
 
     if (current === target) {
@@ -91,12 +100,16 @@ export const astar: AlgorithmFn = ({ graph, config }) => {
       const tentativeG = gScore[current] + weight;
 
       events.push(
-        eb.emit("EDGE_CONSIDERED", { edgeId, from: current, to: neighbor },
-          `Considering edge ${findLabel(current)} → ${findLabel(neighbor)} (weight: ${weight})`)
+        eb.emit(
+          "EDGE_CONSIDERED",
+          { edgeId, from: current, to: neighbor },
+          `Considering edge ${findLabel(current)} -> ${findLabel(neighbor)} (weight: ${weight})`
+        )
       );
 
       if (tentativeG < gScore[neighbor]) {
-        parent[neighbor] = current;
+        parentNode[neighbor] = current;
+        parentEdge[neighbor] = edgeId;
         gScore[neighbor] = tentativeG;
         fScore[neighbor] = tentativeG + h(nodeMap.get(neighbor)!, targetNode);
 
@@ -105,36 +118,59 @@ export const astar: AlgorithmFn = ({ graph, config }) => {
         }
 
         events.push(
-          eb.emit("EDGE_RELAXED", { edgeId, newDistance: tentativeG, via: current },
-            `Relaxed: g(${findLabel(neighbor)}) = ${tentativeG.toFixed(1)} via ${findLabel(current)}`)
+          eb.emit(
+            "EDGE_RELAXED",
+            { edgeId, newDistance: tentativeG, via: current },
+            `Relaxed: g(${findLabel(neighbor)}) = ${tentativeG.toFixed(1)} via ${findLabel(current)}`
+          )
         );
         events.push(
-          eb.emit("DISTANCE_UPDATED", { nodeId: neighbor, distance: tentativeG },
-            `g(${findLabel(neighbor)}) = ${tentativeG.toFixed(1)}`)
+          eb.emit(
+            "DISTANCE_UPDATED",
+            { nodeId: neighbor, distance: tentativeG },
+            `g(${findLabel(neighbor)}) = ${tentativeG.toFixed(1)}`
+          )
         );
       } else {
         events.push(
-          eb.emit("EDGE_REJECTED", { edgeId, reason: "no improvement" },
-            `Edge rejected: does not improve g(${findLabel(neighbor)})`)
+          eb.emit(
+            "EDGE_REJECTED",
+            { edgeId, reason: "no improvement" },
+            `Edge rejected: does not improve g(${findLabel(neighbor)})`
+          )
         );
       }
     }
 
     events.push(
-      eb.emit("PRIORITY_QUEUE_UPDATED", { items: [...openSet] },
-        openSet.length > 0
-          ? `Open set: [${openSet.map(findLabel).join(", ")}]`
-          : "Open set is empty")
+      eb.emit(
+        "PRIORITY_QUEUE_UPDATED",
+        { items: [...openSet] },
+        openSet.length > 0 ? `Open set: [${openSet.map(findLabel).join(", ")}]` : "Open set is empty"
+      )
     );
   }
 
   let path: string[] | undefined;
+  let pathEdgeIds: string[] | undefined;
   if (found) {
-    const result = reconstructPath(parent, source, target, eb);
+    const result = reconstructPath(parentNode, parentEdge, source, target, eb);
     if (result) {
       events.push(result.event);
       path = result.path;
+      pathEdgeIds = result.edgeIds;
     }
+  }
+
+  const unreachableNodeIds = graph.nodes
+    .map((node) => node.id)
+    .filter((nodeId) => gScore[nodeId] === Infinity);
+  const warnings: string[] = [];
+
+  if (!found) {
+    const warning = `Target ${findLabel(target)} is unreachable from ${findLabel(source)}.`;
+    warnings.push(warning);
+    events.push(eb.emit("RUN_WARNING", { message: warning }, warning));
   }
 
   events.push(eb.emit("RUN_COMPLETED", {}, "A* search complete"));
@@ -143,7 +179,7 @@ export const astar: AlgorithmFn = ({ graph, config }) => {
     events,
     result: {
       algorithm: "astar",
-      status: "success",
+      status: found ? "success" : "warning",
       summary: found
         ? `A* found path from ${findLabel(source)} to ${findLabel(target)}: distance ${gScore[target].toFixed(1)}`
         : `A* could not find a path from ${findLabel(source)} to ${findLabel(target)}`,
@@ -153,11 +189,12 @@ export const astar: AlgorithmFn = ({ graph, config }) => {
         stepCount: events.length,
       },
       output: {
-        ...(path ? { path } : {}),
+        ...(path ? { path, pathEdgeIds } : {}),
         ...(found ? { distance: gScore[target] } : {}),
+        unreachableNodeIds,
         heuristic: heuristicName,
       },
-      warnings: [],
+      warnings,
     },
   };
 

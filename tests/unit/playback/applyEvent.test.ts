@@ -53,16 +53,17 @@ describe("computeVisualState", () => {
     expect(state["e2"]).toBe("rejected");
   });
 
-  it("marks path nodes on PATH_UPDATED", () => {
+  it("marks path nodes and edges on PATH_UPDATED", () => {
     const events = [
       event(0, "NODE_VISITED", { nodeId: "A" }),
       event(1, "NODE_VISITED", { nodeId: "B" }),
-      event(2, "PATH_UPDATED", { path: ["A", "B"] }),
+      event(2, "PATH_UPDATED", { path: ["A", "B"], edgeIds: ["e1"] }),
     ];
 
     const state = computeVisualState(events, 2);
     expect(state["A"]).toBe("path");
     expect(state["B"]).toBe("path");
+    expect(state["e1"]).toBe("path");
   });
 
   it("respects currentStep boundary", () => {

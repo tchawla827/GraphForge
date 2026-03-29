@@ -96,9 +96,10 @@ describe("A*", () => {
       },
     });
 
-    expect(output.result.status).toBe("success");
+    expect(output.result.status).toBe("warning");
     expect(output.result.output.path).toBeUndefined();
     expect(output.result.summary).toContain("could not find");
+    expect(output.result.warnings.some((warning) => warning.includes("Target C is unreachable"))).toBe(true);
   });
 
   it("supports zero heuristic (behaves like Dijkstra)", () => {

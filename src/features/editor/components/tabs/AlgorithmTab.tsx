@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useGraphStore } from "@/features/editor/store/graphStore";
 import { usePlaybackStore } from "@/features/editor/store/playbackStore";
+import { useUiStore } from "@/features/editor/store/uiStore";
 import {
   algorithmLabels,
   getAlgorithm,
@@ -47,7 +48,10 @@ interface AlgorithmTabProps {
 
 export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
   const graph = useGraphStore((s) => s.graph);
+  const isDirty = useGraphStore((s) => s.isDirty);
+  const markClean = useGraphStore((s) => s.markClean);
   const { runStatus, startRun } = usePlaybackStore();
+  const setSaveStatus = useUiStore((s) => s.setSaveStatus);
 
   const [algorithm, setAlgorithm] = useState<AlgorithmKey>("bfs");
   const [sourceNodeId, setSourceNodeId] = useState<string>("");
@@ -84,7 +88,8 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
   }, [graph, buildConfig]);
 
   const handleRun = useCallback(async () => {
-    if (!graph || !validation.ok) return;
+    const latestGraph = useGraphStore.getState().graph;
+    if (!latestGraph || !validation.ok) return;
 
     setIsRunning(true);
     setRunError(null);
@@ -98,10 +103,31 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
         }
 
         const startMs = performance.now();
-        const output = algorithmFn({ graph, config });
+        const output = algorithmFn({ graph: latestGraph, config });
         output.result.metrics.runtimeMs = Math.round(performance.now() - startMs);
         startRun(output.events, output.result);
         return;
+      }
+
+      if (isDirty) {
+        setSaveStatus("saving");
+
+        const syncRes = await fetch(`/api/projects/${projectId}/graph`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(latestGraph),
+        });
+
+        if (!syncRes.ok) {
+          const data = await syncRes.json().catch(() => null);
+          setSaveStatus("error");
+          throw new Error(data?.error?.message ?? `Failed to save graph (${syncRes.status})`);
+        }
+
+        if (useGraphStore.getState().graph === latestGraph) {
+          markClean();
+          setSaveStatus("saved");
+        }
       }
 
       const res = await fetch(`/api/projects/${projectId}/run`, {
@@ -123,7 +149,7 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
     } finally {
       setIsRunning(false);
     }
-  }, [graph, projectId, validation, buildConfig, startRun]);
+  }, [validation, buildConfig, projectId, isDirty, markClean, setSaveStatus, startRun]);
 
   return (
     <div className="px-3 py-3 space-y-3">

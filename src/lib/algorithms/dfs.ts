@@ -26,21 +26,34 @@ export const dfs: AlgorithmFn = ({ graph, config }) => {
 
   dfsVisit(source, null, null, true);
 
+  const unreachableNodeIds = graph.nodes
+    .map((node) => node.id)
+    .filter((nodeId) => !visited.has(nodeId));
+  const warnings: string[] = [];
+
+  if (unreachableNodeIds.length > 0) {
+    const warning = `Graph is disconnected from ${findLabel(source)}; ${unreachableNodeIds.length} node${unreachableNodeIds.length !== 1 ? "s are" : " is"} unreachable.`;
+    warnings.push(warning);
+    events.push(
+      eb.emit("RUN_WARNING", { message: warning, nodeIds: unreachableNodeIds }, warning)
+    );
+  }
+
   events.push(eb.emit("RUN_COMPLETED", {}, "DFS traversal complete"));
 
   return {
     events,
     result: {
       algorithm: "dfs",
-      status: "success",
+      status: warnings.length > 0 ? "warning" : "success",
       summary: `DFS visited ${visitedCount} node${visitedCount !== 1 ? "s" : ""} starting from ${findLabel(source)}`,
       metrics: {
         visitedNodeCount: visitedCount,
         consideredEdgeCount: edgesConsidered,
         stepCount: events.length,
       },
-      output: { visitedOrder: [...visited] },
-      warnings: [],
+      output: { visitedOrder: [...visited], unreachableNodeIds },
+      warnings,
     },
   };
 

@@ -3,7 +3,7 @@ import type { VisualStateDiff } from "./types";
 
 /**
  * Compute the visual state for all nodes/edges by processing events 0..currentStep.
- * Returns a map of entity ID → visual state for rendering.
+ * Returns a map of entity ID -> visual state for rendering.
  */
 export function computeVisualState(
   events: readonly PlaybackEvent[],
@@ -42,25 +42,28 @@ export function computeVisualState(
 
       case "PATH_UPDATED": {
         const path = payload.path as string[];
-        // Mark path nodes
+        const edgeIds = Array.isArray(payload.edgeIds)
+          ? payload.edgeIds.filter((edgeId): edgeId is string => typeof edgeId === "string")
+          : [];
+
         for (const nodeId of path) {
           state[nodeId] = "path";
         }
-        // Mark path edges — find edges connecting consecutive path nodes
-        // Edge IDs are not in the path event, so we leave edge states as-is.
-        // The path nodes are the important visual indicator.
+
+        for (const edgeId of edgeIds) {
+          state[edgeId] = "path";
+        }
         break;
       }
 
       case "CYCLE_DETECTED": {
         const cycle = getCycleNodeIds(payload);
         for (const nodeId of cycle) {
-          state[nodeId] = "path"; // reuse "path" style for cycle highlighting
+          state[nodeId] = "path";
         }
         break;
       }
 
-      // These events don't affect visual state of nodes/edges:
       case "RUN_STARTED":
       case "QUEUE_UPDATED":
       case "STACK_UPDATED":

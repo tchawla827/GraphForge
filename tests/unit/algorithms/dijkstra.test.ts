@@ -26,6 +26,7 @@ describe("Dijkstra", () => {
     });
 
     expect(output.result.output.path).toEqual(["A", "B", "C", "D", "E"]);
+    expect(output.result.output.pathEdgeIds).toEqual(["e1", "e3", "e5", "e6"]);
   });
 
   it("emits EDGE_RELAXED and NODE_FINALIZED events", () => {
@@ -60,9 +61,24 @@ describe("Dijkstra", () => {
     const graph = disconnectedGraph();
     const output = dijkstra({ graph, config: { algorithm: "dijkstra", sourceNodeId: "A" } });
 
+    expect(output.result.status).toBe("warning");
     const distances = output.result.output.distances as Record<string, number>;
     expect(distances["A"]).toBe(0);
     expect(distances["B"]).toBe(1);
     expect(distances["C"]).toBeUndefined();
+    expect(output.result.output.unreachableNodeIds).toEqual(["C"]);
+    expect(output.result.warnings.some((warning) => warning.includes("disconnected"))).toBe(true);
+  });
+
+  it("returns warning when target is unreachable", () => {
+    const graph = disconnectedGraph();
+    const output = dijkstra({
+      graph,
+      config: { algorithm: "dijkstra", sourceNodeId: "A", targetNodeId: "C" },
+    });
+
+    expect(output.result.status).toBe("warning");
+    expect(output.result.output.path).toBeUndefined();
+    expect(output.result.warnings.some((warning) => warning.includes("Target C is unreachable"))).toBe(true);
   });
 });

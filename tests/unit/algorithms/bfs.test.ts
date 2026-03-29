@@ -90,6 +90,7 @@ describe("BFS", () => {
     const graph = disconnectedGraph();
     const output = bfs({ graph, config: { algorithm: "bfs", sourceNodeId: "A" } });
 
+    expect(output.result.status).toBe("warning");
     const visited = output.events
       .filter((e) => e.type === "NODE_VISITED")
       .map((e) => e.payload.nodeId);
@@ -97,6 +98,7 @@ describe("BFS", () => {
     expect(visited).toContain("A");
     expect(visited).toContain("B");
     expect(visited).not.toContain("C");
+    expect(output.result.output.unreachableNodeIds).toEqual(["C"]);
   });
 
   it("traverses undirected graph in both directions", () => {

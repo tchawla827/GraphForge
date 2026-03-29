@@ -96,7 +96,7 @@ export function ImportModal({ open, onOpenChange, projectId }: Props) {
       onOpenChange(false);
       setValidated(null);
     } catch {
-      toast.error("Import failed", { description: "Network error — please try again" });
+      toast.error("Import failed", { description: "Network error - please try again" });
     } finally {
       setImporting(false);
     }
@@ -164,7 +164,7 @@ export function ImportModal({ open, onOpenChange, projectId }: Props) {
             disabled={!validated || importing}
             onClick={handleImport}
           >
-            {importing ? "Importing…" : "Import and Replace Graph"}
+            {importing ? "Importing..." : "Import and Replace Graph"}
           </Button>
         </div>
       </DialogContent>

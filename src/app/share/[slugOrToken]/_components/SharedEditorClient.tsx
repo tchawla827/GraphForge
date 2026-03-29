@@ -25,11 +25,20 @@ function SharedEditorInner({
   isAuthenticated,
   showForkButton = true,
 }: SharedEditorClientProps) {
+  const currentGraph = useGraphStore((state) => state.graph);
   const { setGraph } = useGraphStore();
 
   useEffect(() => {
     setGraph(graph);
   }, [graph, setGraph]);
+
+  if (currentGraph !== graph) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-zinc-500">
+        Loading shared graph...
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">

@@ -30,9 +30,7 @@ export function ShareModerationTable({ initialShares }: { initialShares: ShareRo
   }
 
   if (shares.length === 0) {
-    return (
-      <p className="text-zinc-500 text-sm py-4">No active public shares.</p>
-    );
+    return <p className="text-zinc-500 text-sm py-4">No active share links.</p>;
   }
 
   return (
@@ -52,15 +50,17 @@ export function ShareModerationTable({ initialShares }: { initialShares: ShareRo
             <tr key={share.id} className="border-b border-zinc-800/50 last:border-0">
               <td className="px-4 py-3 text-zinc-300">{share.projectTitle}</td>
               <td className="px-4 py-3">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  share.type === "public"
-                    ? "bg-emerald-900/40 text-emerald-400 border border-emerald-800"
-                    : "bg-amber-900/40 text-amber-400 border border-amber-800"
-                }`}>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    share.type === "public"
+                      ? "bg-emerald-900/40 text-emerald-400 border border-emerald-800"
+                      : "bg-amber-900/40 text-amber-400 border border-amber-800"
+                  }`}
+                >
                   {share.type === "public" ? "Public" : "Private token"}
                 </span>
               </td>
-              <td className="px-4 py-3 text-zinc-400 font-mono text-xs">{share.slug ?? "—"}</td>
+              <td className="px-4 py-3 text-zinc-400 font-mono text-xs">{share.slug ?? "-"}</td>
               <td className="px-4 py-3 text-zinc-500 text-xs">
                 {new Date(share.createdAt).toLocaleDateString()}
               </td>
@@ -72,7 +72,7 @@ export function ShareModerationTable({ initialShares }: { initialShares: ShareRo
                   disabled={revoking === share.id}
                   className="border-red-800 text-red-400 hover:bg-red-900/30 text-xs h-7"
                 >
-                  {revoking === share.id ? "Revoking…" : "Revoke"}
+                  {revoking === share.id ? "Revoking..." : "Revoke"}
                 </Button>
               </td>
             </tr>

@@ -8,6 +8,7 @@ import { ToolRail } from "@/features/editor/components/ToolRail";
 import { Toolbar } from "@/features/editor/components/Toolbar";
 import { InspectorPanel } from "@/features/editor/components/InspectorPanel";
 import { PlaybackPanel } from "@/features/editor/components/PlaybackPanel";
+import { OnboardingOverlay } from "@/features/onboarding/OnboardingOverlay";
 import { useGraphSync } from "@/features/editor/hooks/useGraphSync";
 import { useEditorKeymap } from "@/features/editor/hooks/useEditorKeymap";
 import type { CanonicalGraph } from "@/types/graph";
@@ -75,7 +76,10 @@ function EditorInner({ projectId }: { projectId: string }) {
       <Toolbar projectTitle={title} projectId={projectId} />
       <div className="flex flex-1 overflow-hidden">
         <ToolRail />
-        <EditorCanvas />
+        <div className="relative flex flex-1">
+          <EditorCanvas />
+          <OnboardingOverlay />
+        </div>
         <InspectorPanel projectId={projectId} />
       </div>
       <PlaybackPanel />

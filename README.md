@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Graph Forge
 
-## Getting Started
+Graph Forge is a Next.js 16 application for creating graph projects, editing them visually, importing graph data, sharing read-only copies, and running classic graph algorithms.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 App Router
+- React 19
+- Prisma with PostgreSQL
+- Auth.js v5 with Google OAuth
+- Zustand for editor state
+- TanStack Query for client data
+- Vitest for tests
+
+## Features
+
+- Project CRUD with soft-delete archive behavior
+- Graph editor with nodes, edges, directed mode, and weighted mode
+- Import from adjacency list, adjacency matrix, and canonical JSON
+- Algorithm execution and playback
+- Public and private share links with revoke support
+- Shared graph forking into an authenticated user workspace
+- Admin moderation routes
+- Health and readiness probes
+
+## Requirements
+
+- Node.js 20 or newer
+- pnpm
+- PostgreSQL
+- Google OAuth credentials
+
+## Environment
+
+Create `.env.local` from `.env.example`.
+
+Required variables:
+
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_GOOGLE_ID`
+- `AUTH_GOOGLE_SECRET`
+- `ADMIN_EMAILS`
+
+Rate-limit tuning:
+
+- `GRAPH_FORGE_SHARE_CREATE_RATE_LIMIT_MAX`
+- `GRAPH_FORGE_SHARE_CREATE_RATE_LIMIT_WINDOW_MS`
+- `GRAPH_FORGE_IMPORT_RATE_LIMIT_MAX`
+- `GRAPH_FORGE_IMPORT_RATE_LIMIT_WINDOW_MS`
+
+## Install
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Generate the Prisma client and run migrations:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm prisma generate
+pnpm prisma migrate deploy
+```
 
-## Learn More
+For local schema development:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm prisma migrate dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Run
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm dev
+```
 
-## Deploy on Vercel
+Then open `http://localhost:3000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Verification
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+```
+
+## Operations
+
+- `GET /api/health` returns a liveness payload.
+- `GET /api/ready` checks database readiness and returns `503` if the app is not ready to serve traffic.
+- Share creation and import routes are rate limited in-process. For horizontally scaled production, move this to shared storage.
+
+## Deployment Notes
+
+- Set all environment variables before deploy.
+- Run Prisma migrations before serving traffic.
+- Configure the correct Google OAuth callback URLs for the deployed domain.
+- Wire `/api/health` and `/api/ready` into your platform probes.
+- Run `pnpm lint`, `pnpm typecheck`, and `pnpm test` in CI.

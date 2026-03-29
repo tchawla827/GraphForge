@@ -39,11 +39,16 @@ export function EmptyState() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await fetch(`/api/projects/${project.id}/graph`, {
+      const seedRes = await fetch(`/api/projects/${project.id}/graph`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(graphPayload),
       });
+
+      if (!seedRes.ok) {
+        await fetch(`/api/projects/${project.id}`, { method: "DELETE" }).catch(() => undefined);
+        return;
+      }
 
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
       router.push(`/editor/${project.id}`);

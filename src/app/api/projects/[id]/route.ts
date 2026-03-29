@@ -4,7 +4,7 @@ import { getProject, updateProject, deleteProject } from "@/server/projectServic
 import { z } from "zod";
 
 const UpdateProjectBody = z.object({
-  title: z.string().min(1).max(200).optional(),
+  title: z.string().min(1).max(100).optional(),
   description: z.string().max(1000).optional(),
 });
 

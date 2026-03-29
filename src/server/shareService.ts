@@ -38,7 +38,6 @@ export interface PrivateShareInfo {
 export interface ActivePrivateShareInfo {
   id: string;
   type: "private_token";
-  url: string;
   isActive: boolean;
   createdAt: Date;
 }
@@ -113,6 +112,7 @@ export async function createPrivateShare(
     data: {
       projectId,
       type: "private_token",
+      slug: null,
       tokenHash: hash,
       isActive: true,
       createdBy: userId,
@@ -184,7 +184,6 @@ export async function listProjectShares(
       isActive: s.isActive,
       slug: s.slug,
       createdAt: s.createdAt,
-      // Private shares: url cannot be reconstructed (raw token was shown once)
       url: s.type === "public" && s.slug ? buildShareUrl(base, s.slug) : "",
     })),
   };
@@ -225,7 +224,7 @@ export async function getShareBySlugOrToken(
   const project = share.project;
   if (!project || project.archivedAt !== null) return null;
 
-  const record = project.graphs;
+  const record = project.graphs[0];
   if (!record) return null;
 
   const graph: CanonicalGraph = {
@@ -283,7 +282,7 @@ export async function forkSharedProject(
     return { ok: false, error: "not_found" };
   }
 
-  const sourceGraph = sourceProject.graphs;
+  const sourceGraph = sourceProject.graphs[0];
   const newTitle = `Copy of ${sourceProject.title}`;
 
   const forkedProject = await prisma.$transaction(async (tx) => {
@@ -307,7 +306,7 @@ export async function forkSharedProject(
 
     if (!sourceGraph) return created;
 
-    const targetGraph = created.graphs;
+    const targetGraph = created.graphs[0];
     if (!targetGraph) return created;
     const nodeIdMap = new Map<string, string>();
 

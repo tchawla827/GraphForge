@@ -4,7 +4,7 @@ import { createProject, listProjects } from "@/server/projectService";
 import { z } from "zod";
 
 const CreateProjectBody = z.object({
-  title: z.string().min(1).max(200),
+  title: z.string().min(1).max(100),
   description: z.string().max(1000).optional(),
 });
 

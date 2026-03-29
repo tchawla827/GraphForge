@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { resetOnboarding } from "@/features/onboarding/storage";
 
 const KEYBOARD_SHORTCUTS = [
   { key: "Delete / Backspace", action: "Delete selected node or edge" },
   { key: "Escape", action: "Deselect all" },
-  { key: "Ctrl + S", action: "Force save graph" },
-  { key: "Ctrl + Z", action: "Undo (if available)" },
 ] as const;
 
 const ALGORITHM_CONSTRAINTS = [
@@ -70,8 +70,63 @@ function CollapsibleSection({
 }
 
 export function HelpPanel() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [resetDone, setResetDone] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSession() {
+      try {
+        const response = await fetch("/api/auth/session");
+        if (!response.ok) return;
+        const data = (await response.json()) as { user?: { id?: string } };
+        if (!cancelled) {
+          setUserId(data.user?.id ?? null);
+        }
+      } catch {
+        // Non-blocking helper UI only.
+      }
+    }
+
+    void loadSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="px-4 py-5 space-y-3 text-sm">
+      <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-zinc-200">Onboarding guide</p>
+            <p className="text-xs text-zinc-500">
+              Re-open the quick-start overlay if you want the editor walkthrough again.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            disabled={!userId}
+            onClick={() => {
+              if (!userId) return;
+              resetOnboarding(userId);
+              setResetDone(true);
+            }}
+          >
+            Reset guide
+          </Button>
+        </div>
+        {resetDone ? (
+          <p className="mt-2 text-xs text-emerald-400">
+            Guide reset. Reload the editor to see it again.
+          </p>
+        ) : null}
+      </div>
+
       <CollapsibleSection title="Keyboard shortcuts" defaultOpen>
         <div className="px-4 py-3 space-y-2">
           {KEYBOARD_SHORTCUTS.map(({ key, action }) => (

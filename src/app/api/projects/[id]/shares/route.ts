@@ -6,6 +6,7 @@ import {
   createPrivateShare,
   listProjectShares,
 } from "@/server/shareService";
+import { checkRateLimit } from "@/lib/server/rateLimit";
 
 const CreateShareBody = z.object({
   type: z.enum(["public", "private_token"]),
@@ -51,6 +52,24 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json(
       { error: { code: "AUTH_REQUIRED", message: "Authentication required" } },
       { status: 401 }
+    );
+  }
+
+  const rateLimit = checkRateLimit("share", session.user.id);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "RATE_LIMITED",
+          message: "Too many share links created. Please try again shortly.",
+        },
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)),
+        },
+      }
     );
   }
 

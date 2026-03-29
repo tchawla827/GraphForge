@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth/config";
+import { track } from "@/lib/analytics/track";
 import { getShareBySlugOrToken } from "@/server/shareService";
 import { SharedEditorClient } from "./_components/SharedEditorClient";
 
@@ -18,6 +19,10 @@ export default async function SharedPage({ params }: SharedPageProps) {
   if (!payload) {
     notFound();
   }
+
+  const shareType =
+    payload.share.type === "private_token" ? "private_token" : "public";
+  void track({ name: "share_opened", type: shareType });
 
   return (
     <div className="h-screen overflow-hidden bg-zinc-950">

@@ -10,7 +10,10 @@ export async function Navbar() {
   return (
     <header className="h-14 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="max-w-screen-xl mx-auto px-4 h-full flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-foreground">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-semibold tracking-tight text-foreground"
+        >
           <span className="text-primary">▲</span>
           <span>GraphForge</span>
         </Link>

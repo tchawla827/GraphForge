@@ -13,6 +13,7 @@ import {
 import { useGraphStore } from "@/features/editor/store/graphStore";
 import { usePlaybackStore } from "@/features/editor/store/playbackStore";
 import { useUiStore } from "@/features/editor/store/uiStore";
+import { track } from "@/lib/analytics/track";
 import {
   algorithmLabels,
   getAlgorithm,
@@ -89,7 +90,16 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
 
   const handleRun = useCallback(async () => {
     const latestGraph = useGraphStore.getState().graph;
-    if (!latestGraph || !validation.ok) return;
+    if (!latestGraph || !validation.ok) {
+      if (!validation.ok) {
+        void track({
+          name: "algorithm_run_blocked_invalid",
+          algorithm,
+          reason: validation.error,
+        });
+      }
+      return;
+    }
 
     setIsRunning(true);
     setRunError(null);
@@ -127,6 +137,7 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
         if (useGraphStore.getState().graph === latestGraph) {
           markClean();
           setSaveStatus("saved");
+          void track({ name: "graph_saved" });
         }
       }
 
@@ -149,7 +160,7 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
     } finally {
       setIsRunning(false);
     }
-  }, [validation, buildConfig, projectId, isDirty, markClean, setSaveStatus, startRun]);
+  }, [algorithm, validation, buildConfig, projectId, isDirty, markClean, setSaveStatus, startRun]);
 
   return (
     <div className="px-3 py-3 space-y-3">

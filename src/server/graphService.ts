@@ -38,7 +38,7 @@ export async function getGraph(
     return { ok: false, error: "forbidden", message: "Access denied" };
   }
 
-  const record = project.graphs;
+  const record = project.graphs[0];
   if (!record) {
     return { ok: false, error: "not_found", message: "Graph not found" };
   }
@@ -103,7 +103,7 @@ export async function replaceGraph(
   }
 
   const graph = parsed.data;
-  const record = project.graphs;
+  const record = project.graphs[0];
   if (!record) {
     return { ok: false, error: "not_found", message: "Graph not found" };
   }

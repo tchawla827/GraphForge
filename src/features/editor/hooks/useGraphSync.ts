@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useGraphStore } from "@/features/editor/store/graphStore";
 import { useUiStore } from "@/features/editor/store/uiStore";
+import { track } from "@/lib/analytics/track";
 
 export function useGraphSync(projectId: string) {
   const { graph, isDirty, markClean } = useGraphStore();
@@ -35,6 +36,7 @@ export function useGraphSync(projectId: string) {
         if (useGraphStore.getState().graph === graph) {
           markClean();
           setSaveStatus("saved");
+          void track({ name: "graph_saved" });
         }
       } catch {
         if (useGraphStore.getState().graph === graph) {

@@ -13,6 +13,8 @@ interface SelectionActions {
   }) => void;
   selectNodes: (ids: string[]) => void;
   selectEdges: (ids: string[]) => void;
+  toggleNodeSelection: (id: string) => void;
+  toggleEdgeSelection: (id: string) => void;
   clearSelection: () => void;
   reconcileSelection: (graph: CanonicalGraph | null) => void;
 }
@@ -32,6 +34,24 @@ export const useSelectionStore = create<SelectionState & SelectionActions>(
 
     selectEdges(ids) {
       set((state) => ({ ...state, selectedEdgeIds: ids }));
+    },
+
+    toggleNodeSelection(id) {
+      set((state) => ({
+        ...state,
+        selectedNodeIds: state.selectedNodeIds.includes(id)
+          ? state.selectedNodeIds.filter((selectedId) => selectedId !== id)
+          : [...state.selectedNodeIds, id],
+      }));
+    },
+
+    toggleEdgeSelection(id) {
+      set((state) => ({
+        ...state,
+        selectedEdgeIds: state.selectedEdgeIds.includes(id)
+          ? state.selectedEdgeIds.filter((selectedId) => selectedId !== id)
+          : [...state.selectedEdgeIds, id],
+      }));
     },
 
     clearSelection() {

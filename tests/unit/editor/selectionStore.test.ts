@@ -32,4 +32,22 @@ describe("selectionStore", () => {
     expect(selectedNodeIds).toEqual(["node-1"]);
     expect(selectedEdgeIds).toEqual(["edge-1", "edge-2"]);
   });
+
+  it("toggles arbitrary node and edge selections independently", () => {
+    const {
+      toggleNodeSelection,
+      toggleEdgeSelection,
+    } = useSelectionStore.getState();
+
+    toggleNodeSelection("node-1");
+    toggleNodeSelection("node-2");
+    toggleEdgeSelection("edge-1");
+    toggleEdgeSelection("edge-2");
+    toggleNodeSelection("node-1");
+
+    const { selectedNodeIds, selectedEdgeIds } = useSelectionStore.getState();
+
+    expect(selectedNodeIds).toEqual(["node-2"]);
+    expect(selectedEdgeIds).toEqual(["edge-1", "edge-2"]);
+  });
 });

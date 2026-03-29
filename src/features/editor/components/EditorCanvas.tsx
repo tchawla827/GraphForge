@@ -81,8 +81,8 @@ export function EditorCanvas({ readOnly = false }: EditorCanvasProps) {
     selectedNodeIds,
     selectedEdgeIds,
     setSelection,
-    selectNodes,
-    selectEdges,
+    toggleNodeSelection,
+    toggleEdgeSelection,
     clearSelection,
   } = useSelectionStore();
   const { toolMode, showEdgeLabels, showEdgeWeights } = useUiStore();
@@ -219,27 +219,37 @@ export function EditorCanvas({ readOnly = false }: EditorCanvasProps) {
   );
 
   const onNodeClick = useCallback(
-    (_: React.MouseEvent, node: { id: string }) => {
+    (event: React.MouseEvent, node: { id: string }) => {
       if (readOnly) return;
       if (toolMode === "delete") {
         removeNode(node.id);
+      } else if (event.shiftKey || event.metaKey || event.ctrlKey) {
+        toggleNodeSelection(node.id);
       } else {
-        selectNodes([node.id]);
+        setSelection({
+          selectedNodeIds: [node.id],
+          selectedEdgeIds: [],
+        });
       }
     },
-    [readOnly, toolMode, removeNode, selectNodes]
+    [readOnly, toolMode, removeNode, setSelection, toggleNodeSelection]
   );
 
   const onEdgeClick = useCallback(
-    (_: React.MouseEvent, edge: { id: string }) => {
+    (event: React.MouseEvent, edge: { id: string }) => {
       if (readOnly) return;
       if (toolMode === "delete") {
         useGraphStore.getState().removeEdge(edge.id);
+      } else if (event.shiftKey || event.metaKey || event.ctrlKey) {
+        toggleEdgeSelection(edge.id);
       } else {
-        selectEdges([edge.id]);
+        setSelection({
+          selectedNodeIds: [],
+          selectedEdgeIds: [edge.id],
+        });
       }
     },
-    [readOnly, toolMode, selectEdges]
+    [readOnly, toolMode, setSelection, toggleEdgeSelection]
   );
 
   const onSelectionChange = useCallback(

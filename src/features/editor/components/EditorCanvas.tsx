@@ -80,6 +80,7 @@ export function EditorCanvas({ readOnly = false }: EditorCanvasProps) {
   const {
     selectedNodeIds,
     selectedEdgeIds,
+    setSelection,
     selectNodes,
     selectEdges,
     clearSelection,
@@ -249,13 +250,12 @@ export function EditorCanvas({ readOnly = false }: EditorCanvasProps) {
       nodes: { id: string }[];
       edges: { id: string }[];
     }) => {
-      if (selNodes.length > 0) {
-        selectNodes(selNodes.map((n) => n.id));
-      } else if (selEdges.length > 0) {
-        selectEdges(selEdges.map((e) => e.id));
-      }
+      setSelection({
+        selectedNodeIds: selNodes.map((node) => node.id),
+        selectedEdgeIds: selEdges.map((edge) => edge.id),
+      });
     },
-    [selectNodes, selectEdges]
+    [setSelection]
   );
 
   const hint =

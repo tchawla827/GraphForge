@@ -7,6 +7,10 @@ interface SelectionState {
 }
 
 interface SelectionActions {
+  setSelection: (selection: {
+    selectedNodeIds: string[];
+    selectedEdgeIds: string[];
+  }) => void;
   selectNodes: (ids: string[]) => void;
   selectEdges: (ids: string[]) => void;
   clearSelection: () => void;
@@ -18,12 +22,16 @@ export const useSelectionStore = create<SelectionState & SelectionActions>(
     selectedNodeIds: [],
     selectedEdgeIds: [],
 
+    setSelection(selection) {
+      set(selection);
+    },
+
     selectNodes(ids) {
-      set({ selectedNodeIds: ids, selectedEdgeIds: [] });
+      set((state) => ({ ...state, selectedNodeIds: ids }));
     },
 
     selectEdges(ids) {
-      set({ selectedEdgeIds: ids, selectedNodeIds: [] });
+      set((state) => ({ ...state, selectedEdgeIds: ids }));
     },
 
     clearSelection() {

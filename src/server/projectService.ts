@@ -160,7 +160,8 @@ export async function duplicateProject(
   }
 
   const sourceGraph =
-    project.graphs && project.graphs.length > 0 ? project.graphs[0] : null;
+    (Array.isArray(project.graphs) ? project.graphs[0] : project.graphs) ??
+    null;
 
   const duplicatedProject = await prisma.$transaction(async (tx) => {
     const createdProject = await tx.project.create({
@@ -188,9 +189,9 @@ export async function duplicateProject(
     }
 
     const targetGraph =
-      createdProject.graphs && createdProject.graphs.length > 0
+      (Array.isArray(createdProject.graphs)
         ? createdProject.graphs[0]
-        : null;
+        : createdProject.graphs) ?? null;
     if (!targetGraph) {
       return createdProject;
     }

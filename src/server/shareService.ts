@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/client";
-import { Prisma } from "@prisma/client";
+import { Prisma, type NodeRecord, type EdgeRecord } from "@prisma/client";
 import { generateToken, hashToken } from "@/lib/share/tokenGenerator";
 import { generateUniqueSlug } from "@/lib/share/slugGenerator";
 import { unscopeGraphEntityId } from "@/lib/graph/persistenceIds";
@@ -240,13 +240,13 @@ export async function getShareBySlugOrToken(
       allowSelfLoops: record.allowSelfLoops,
       allowParallelEdges: record.allowParallelEdges,
     },
-    nodes: record.nodes.map((n) => ({
+    nodes: record.nodes.map((n: NodeRecord) => ({
       id: unscopeGraphEntityId(record.id, n.id),
       label: n.label,
       position: { x: n.x, y: n.y },
       metadata: (n.metadataJson as Record<string, unknown>) ?? undefined,
     })),
-    edges: record.edges.map((e) => ({
+    edges: record.edges.map((e: EdgeRecord) => ({
       id: unscopeGraphEntityId(record.id, e.id),
       source: unscopeGraphEntityId(record.id, e.sourceNodeId),
       target: unscopeGraphEntityId(record.id, e.targetNodeId),
@@ -321,7 +321,7 @@ export async function forkSharedProject(
 
     if (sourceGraph.nodes.length > 0) {
       await tx.nodeRecord.createMany({
-        data: sourceGraph.nodes.map((node) => {
+        data: sourceGraph.nodes.map((node: NodeRecord) => {
           const nextId = crypto.randomUUID();
           nodeIdMap.set(node.id, nextId);
           return {
@@ -340,7 +340,7 @@ export async function forkSharedProject(
 
     if (sourceGraph.edges.length > 0) {
       await tx.edgeRecord.createMany({
-        data: sourceGraph.edges.map((edge) => ({
+        data: sourceGraph.edges.map((edge: EdgeRecord) => ({
           id: crypto.randomUUID(),
           graphId: targetGraph.id,
           sourceNodeId: nodeIdMap.get(edge.sourceNodeId) ?? edge.sourceNodeId,

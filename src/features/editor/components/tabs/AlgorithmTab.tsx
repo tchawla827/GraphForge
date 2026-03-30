@@ -62,6 +62,14 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
   const [runError, setRunError] = useState<string | null>(null);
 
   const nodes = useMemo(() => graph?.nodes ?? [], [graph]);
+  const sourceNode = useMemo(
+    () => nodes.find((n) => n.id === sourceNodeId),
+    [nodes, sourceNodeId]
+  );
+  const targetNode = useMemo(
+    () => nodes.find((n) => n.id === targetNodeId),
+    [nodes, targetNodeId]
+  );
 
   // Auto-select first node as source if none selected
   useEffect(() => {
@@ -197,7 +205,11 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
               className="w-full h-7 text-xs bg-zinc-900 border-zinc-700"
               aria-label="Source node"
             >
-              <SelectValue placeholder="Select source..." />
+              {sourceNode ? (
+                sourceNode.label
+              ) : (
+                <SelectValue placeholder="Select source..." />
+              )}
             </SelectTrigger>
             <SelectContent>
               {nodes.map((n) => (
@@ -221,7 +233,11 @@ export function AlgorithmTab({ projectId }: AlgorithmTabProps) {
               className="w-full h-7 text-xs bg-zinc-900 border-zinc-700"
               aria-label="Target node"
             >
-              <SelectValue placeholder="Select target..." />
+              {targetNode ? (
+                targetNode.label
+              ) : (
+                <SelectValue placeholder="Select target..." />
+              )}
             </SelectTrigger>
             <SelectContent>
               {nodes

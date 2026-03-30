@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db/client";
-import { Prisma } from "@prisma/client";
-import type { Project } from "@prisma/client";
+import { Prisma, type Project, type NodeRecord, type EdgeRecord } from "@prisma/client";
 import { track } from "@/lib/analytics/track";
 
 export interface CreateProjectInput {
@@ -199,7 +198,7 @@ export async function duplicateProject(
 
     if (sourceGraph.nodes.length > 0) {
       await tx.nodeRecord.createMany({
-        data: sourceGraph.nodes.map((node) => {
+        data: sourceGraph.nodes.map((node: NodeRecord) => {
           const nextId = crypto.randomUUID();
           nodeIdMap.set(node.id, nextId);
 
@@ -219,7 +218,7 @@ export async function duplicateProject(
 
     if (sourceGraph.edges.length > 0) {
       await tx.edgeRecord.createMany({
-        data: sourceGraph.edges.map((edge) => ({
+        data: sourceGraph.edges.map((edge: EdgeRecord) => ({
           id: crypto.randomUUID(),
           graphId: targetGraph.id,
           sourceNodeId: nodeIdMap.get(edge.sourceNodeId) ?? edge.sourceNodeId,

@@ -159,7 +159,8 @@ export async function duplicateProject(
     return { ok: false, error: "forbidden" };
   }
 
-  const sourceGraph = project.graphs ?? null;
+  const sourceGraph =
+    project.graphs && project.graphs.length > 0 ? project.graphs[0] : null;
 
   const duplicatedProject = await prisma.$transaction(async (tx) => {
     const createdProject = await tx.project.create({
@@ -186,7 +187,10 @@ export async function duplicateProject(
       return createdProject;
     }
 
-    const targetGraph = createdProject.graphs ?? null;
+    const targetGraph =
+      createdProject.graphs && createdProject.graphs.length > 0
+        ? createdProject.graphs[0]
+        : null;
     if (!targetGraph) {
       return createdProject;
     }

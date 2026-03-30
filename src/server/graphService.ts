@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/client";
-import { Prisma } from "@prisma/client";
+import { Prisma, type NodeRecord, type EdgeRecord } from "@prisma/client";
 import { CanonicalGraphSchema } from "@/lib/graph/validate";
 import {
   scopeGraphEntityId,
@@ -57,13 +57,13 @@ export async function getGraph(
       allowSelfLoops: record.allowSelfLoops,
       allowParallelEdges: record.allowParallelEdges,
     },
-    nodes: record.nodes.map((n) => ({
+    nodes: record.nodes.map((n: NodeRecord) => ({
       id: unscopeGraphEntityId(record.id, n.id),
       label: n.label,
       position: { x: n.x, y: n.y },
       metadata: (n.metadataJson as Record<string, unknown>) ?? undefined,
     })),
-    edges: record.edges.map((e) => ({
+    edges: record.edges.map((e: EdgeRecord) => ({
       id: unscopeGraphEntityId(record.id, e.id),
       source: unscopeGraphEntityId(record.id, e.sourceNodeId),
       target: unscopeGraphEntityId(record.id, e.targetNodeId),

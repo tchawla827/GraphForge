@@ -225,7 +225,8 @@ export async function getShareBySlugOrToken(
   const project = share.project;
   if (!project || project.archivedAt !== null) return null;
 
-  const record = project.graphs ?? null;
+  const record =
+    project.graphs && project.graphs.length > 0 ? project.graphs[0] : null;
   if (!record) return null;
 
   const graph: CanonicalGraph = {
@@ -283,7 +284,10 @@ export async function forkSharedProject(
     return { ok: false, error: "not_found" };
   }
 
-  const sourceGraph = sourceProject.graphs ?? null;
+  const sourceGraph =
+    sourceProject.graphs && sourceProject.graphs.length > 0
+      ? sourceProject.graphs[0]
+      : null;
   const newTitle = `Copy of ${sourceProject.title}`;
 
   const forkedProject = await prisma.$transaction(async (tx) => {
@@ -307,7 +311,8 @@ export async function forkSharedProject(
 
     if (!sourceGraph) return created;
 
-    const targetGraph = created.graphs ?? null;
+    const targetGraph =
+      created.graphs && created.graphs.length > 0 ? created.graphs[0] : null;
     if (!targetGraph) return created;
     const nodeIdMap = new Map<string, string>();
 
